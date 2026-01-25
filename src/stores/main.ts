@@ -1,5 +1,6 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
+import { useTwitchStore } from "./twitch";
 
 interface ChromeMessage {
   type: "SET_TWITCH_ACCESSTOKEN";
@@ -42,14 +43,27 @@ export const useMainStore = defineStore("main", () => {
     return `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
   });
 
-  function authenticateTwitch(token: string) {
+  async function authenticateTwitch(token: string) {
     twitchAccessToken.value = token;
 
-    // Send access token to service worker where it will be stored in chrome storage
-    sendChromeMessage({
-      type: "SET_TWITCH_ACCESSTOKEN",
-      data: { token: token }
-    });
+    const twitchStore = useTwitchStore();
+
+    if (typeof chrome !== "undefined" && chrome.storage) {
+      // Send access token to service worker where it will be stored in chrome storage
+      sendChromeMessage({
+        type: "SET_TWITCH_ACCESSTOKEN",
+        data: { token: token }
+      });
+    } else {
+      const isValid = await twitchStore.validateToken();
+      if (!isValid) {
+        console.error("Invalid Twitch access token");
+      } else {
+        console.log("Twitch access token is valid");
+        setStorageItem({ twitchAccessToken: token });
+        await twitchStore.getTwitchUser();
+      }
+    }
   }
 
   function logoutTwitch() {
@@ -57,8 +71,8 @@ export const useMainStore = defineStore("main", () => {
     twitchData.value = null;
 
     // Clear access token from chrome storage
-    setChromeStorage({ twitchAccessToken: "" });
-    setChromeStorage({ twitchData: null });
+    setStorageItem({ twitchAccessToken: "" });
+    setStorageItem({ twitchData: null });
   }
 
   function sendChromeMessage(message: ChromeMessage) {
@@ -74,25 +88,36 @@ export const useMainStore = defineStore("main", () => {
     }
   }
 
-  function setChromeStorage(data: { [key: string]: any }) {
+  function setStorageItem(data: { [key: string]: any }) {
     if (typeof chrome !== "undefined" && chrome.storage) {
       chrome.storage.sync.set(data).then(() => {
         console.log("Data saved to chrome storage:", data);
       });
+    } else if (typeof localStorage !== "undefined") {
+      const key = Object.keys(data)[0] as string;
+      const value = Object.values(data)[0];
+      localStorage.setItem(
+        key,
+        typeof value === "string" ? value : JSON.stringify(value)
+      );
+      console.log("Data saved to localStorage:", data);
     } else {
       console.warn(
-        "Not running in a Chrome extension environment. Could not save to chrome storage."
+        "Neither chrome.storage nor localStorage is available. Could not set storage item."
       );
     }
   }
 
-  async function getChromeStorage(key: string): Promise<any> {
+  async function getStorageItem(key: string): Promise<any> {
     if (typeof chrome !== "undefined" && chrome.storage) {
       const result = await chrome.storage.sync.get(key);
       return result[key];
+    } else if (typeof localStorage !== "undefined") {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
     } else {
       throw new Error(
-        "Not running in a Chrome extension environment. Could not get from chrome storage."
+        "Neither chrome.storage nor localStorage is available. Could not get from storage."
       );
     }
   }
@@ -108,8 +133,8 @@ export const useMainStore = defineStore("main", () => {
     authLink,
     authenticateTwitch,
     sendChromeMessage,
-    setChromeStorage,
-    getChromeStorage,
+    setStorageItem,
+    getStorageItem,
     setTwitchData,
     logoutTwitch
   };

@@ -19,7 +19,8 @@
         class="sidenav__nav-item"
         v-if="mainStore.isLoggedIn"
         @click.prevent="mainStore.logoutTwitch()"
-        ><Icon :icon="'arrow-right-from-bracket'" size="lg" :title="'Logout'" />
+        title="Logout"
+        ><Icon :icon="'arrow-right-from-bracket'" size="lg" />
       </a>
     </div>
   </div>

@@ -27,14 +27,22 @@ const currentView = computed(() => {
 onBeforeMount(async () => {
   if (typeof chrome !== "undefined" && chrome.storage) {
     mainStore.twitchAccessToken =
-      await mainStore.getChromeStorage("twitchAccessToken");
+      await mainStore.getStorageItem("twitchAccessToken");
 
     const twitchData: TwitchData | null =
-      await mainStore.getChromeStorage("twitchData");
+      await mainStore.getStorageItem("twitchData");
     console.log("Twitch Data: ", twitchData);
     mainStore.setTwitchData(twitchData);
-  } else {
-    console.log("chrome.runtime is undefined");
+  } else if (localStorage) {
+    mainStore.twitchAccessToken =
+      localStorage.getItem("twitchAccessToken") || "";
+
+    const twitchDataString = localStorage.getItem("twitchData");
+    const twitchData: TwitchData | null = twitchDataString
+      ? JSON.parse(twitchDataString)
+      : null;
+    console.log("Twitch Data: ", twitchData);
+    mainStore.setTwitchData(twitchData);
   }
 });
 </script>

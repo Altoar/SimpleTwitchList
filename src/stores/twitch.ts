@@ -2,6 +2,7 @@ import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import { useApi } from "@/composables/useTwitchApi";
 import { useMainStore } from "./main";
+import axios from "axios";
 
 const callApi = useApi();
 
@@ -30,13 +31,82 @@ export interface TwitchApiFollowedChannelsResponse {
   };
 }
 
+export interface TwitchUserApiResponse {
+  id: string;
+  login: string;
+  display_name: string;
+  type: string;
+  broadcaster_type: string;
+  description: string;
+  profile_image_url: string;
+  offline_image_url: string;
+  view_count: number;
+  email?: string;
+  created_at: string;
+}
+
 export const useTwitchStore = defineStore("twitch", () => {
   const mainStore = useMainStore();
-
   const followedChannels = ref<TwitchApiFollowedChannel[]>([]);
   const fetchFollowedChannelsStatus = ref<
     "idle" | "loading" | "error" | "success"
   >("idle");
+
+  async function validateToken(): Promise<boolean> {
+    const mainStore = useMainStore();
+    try {
+      const response = await axios.get("https://id.twitch.tv/oauth2/validate", {
+        headers: {
+          Authorization: "OAuth " + mainStore.twitchAccessToken
+        }
+      });
+
+      mainStore.twitchData = {
+        clientId: response.data.client_id,
+        expiresIn: response.data.expires_in,
+        scopes: response.data.scopes
+      };
+      return true;
+    } catch (error) {
+      mainStore.twitchData = null;
+      mainStore.twitchAccessToken = "";
+      console.error("Token validation failed:", error);
+      return false;
+    }
+  }
+
+  async function getTwitchUser() {
+    try {
+      const user = await callApi<{ data: TwitchUserApiResponse[] }>(
+        "/users",
+        "GET"
+      );
+
+      if (!user.data[0] || user.data.length === 0) {
+        console.error("No user data returned from Twitch API");
+        return;
+      }
+
+      if (mainStore.twitchData) {
+        mainStore.twitchData.user = {
+          id: user.data[0].id,
+          login: user.data[0].login,
+          displayName: user.data[0].display_name,
+          type: user.data[0].type,
+          broadcasterType: user.data[0].broadcaster_type,
+          description: user.data[0].description,
+          profileImageUrl: user.data[0].profile_image_url,
+          offlineImageUrl: user.data[0].offline_image_url,
+          email: user.data[0].email,
+          createdAt: user.data[0].created_at
+        };
+
+        mainStore.setStorageItem({ twitchData: mainStore.twitchData });
+      }
+    } catch (error) {
+      console.error("Error fetching Twitch user info:", error);
+    }
+  }
 
   async function getFollowedChannels() {
     if (!mainStore.isLoggedIn) {
@@ -85,6 +155,8 @@ export const useTwitchStore = defineStore("twitch", () => {
   return {
     followedChannels,
     fetchFollowedChannelsStatus,
-    getFollowedChannels
+    validateToken,
+    getFollowedChannels,
+    getTwitchUser
   };
 });
