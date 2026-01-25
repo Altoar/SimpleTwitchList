@@ -9,7 +9,7 @@
         }"
         v-for="item in nav"
         :key="item.name"
-        ><Icon :icon="item.icon"
+        ><Icon :icon="item.icon" size="lg"
       /></a>
     </div>
   </div>

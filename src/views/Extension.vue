@@ -20,7 +20,7 @@ const routes = {
   "/browse": ContentBrowse
 };
 
-const currentPath = ref(window.location.hash);
+const currentPath = ref(window.location.hash || "#/follows");
 
 window.addEventListener("hashchange", () => {
   currentPath.value = window.location.hash;
@@ -38,7 +38,7 @@ const currentView = computed(() => {
   height: 100%;
   min-height: 200px;
   min-width: 420px;
-  max-width: 400px;
+  max-width: 450px;
   max-height: 500px;
 }
 .content-area {
