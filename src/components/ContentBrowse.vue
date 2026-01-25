@@ -1,13 +1,30 @@
 <template>
   <div class="content-browse">
     <div class="content-browse__header">
+      <BaseSelect
+        :options="languages"
+        v-model="twitchStore.topChannelsLanguage"
+        @update:modelValue="
+          () => {
+            twitchStore.getTopChannels({
+              reset: true,
+              language: twitchStore.topChannelsLanguage as string
+            });
+          }
+        " />
+
       <BaseButton
         size="sm"
         square
         transparent
         icon="arrows-rotate"
         :loading="twitchStore.fetchTopChannelsStatus === 'loading'"
-        @click="twitchStore.getTopChannels(true)" />
+        @click="
+          twitchStore.getTopChannels({
+            reset: true,
+            language: twitchStore.topChannelsLanguage as string
+          })
+        " />
     </div>
 
     <StreamListItem
@@ -22,7 +39,11 @@
         primary
         icon="arrows-rotate"
         :loading="false"
-        @click="twitchStore.getTopChannels()" />
+        @click="
+          twitchStore.getTopChannels({
+            language: twitchStore.topChannelsLanguage as string
+          })
+        " />
     </div>
   </div>
 </template>
@@ -32,11 +53,24 @@ import { ref, onBeforeMount } from "vue";
 import { useTwitchStore } from "@/stores/twitch";
 import StreamListItem from "./StreamListItem.vue";
 import BaseButton from "@/ui/BaseButton.vue";
+import BaseSelect from "@/ui/BaseSelect.vue";
 
 const twitchStore = useTwitchStore();
 
+const languages = ref([
+  { label: "All Languages", value: "all" },
+  { label: "English", value: "en" },
+  { label: "Spanish", value: "es" },
+  { label: "German", value: "de" },
+  { label: "French", value: "fr" },
+  { label: "Japanese", value: "ja" }
+]);
+
 onBeforeMount(() => {
-  twitchStore.getTopChannels();
+  twitchStore.getTopChannels({
+    reset: true,
+    language: twitchStore.topChannelsLanguage as string
+  });
 });
 </script>
 
@@ -44,7 +78,7 @@ onBeforeMount(() => {
 .content-browse {
   &__header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding: 0 10px;
     margin-bottom: 5px;
   }

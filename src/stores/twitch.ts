@@ -50,6 +50,7 @@ export const useTwitchStore = defineStore("twitch", () => {
   const followedChannels = ref<TwitchApiStream[]>([]);
   const topChannels = ref<TwitchApiStream[]>([]);
   const topChannelsCursor = ref<string | undefined>(undefined);
+  const topChannelsLanguage = ref<string | null>(null);
   const fetchFollowedChannelsStatus = ref<
     "idle" | "loading" | "error" | "success"
   >("idle");
@@ -155,7 +156,11 @@ export const useTwitchStore = defineStore("twitch", () => {
     followedChannels.value = allChannels;
   }
 
-  async function getTopChannels(reset = false) {
+  async function getTopChannels({
+    language = "all",
+    game = undefined,
+    reset = false
+  }) {
     if (fetchTopChannelsStatus.value === "loading") {
       return;
     }
@@ -171,8 +176,10 @@ export const useTwitchStore = defineStore("twitch", () => {
         "GET",
         {
           params: {
-            first: 25,
-            after: topChannelsCursor.value
+            first: 30,
+            after: topChannelsCursor.value,
+            game_id: game,
+            language: language === "all" ? undefined : language
           }
         }
       );
@@ -194,6 +201,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     followedChannels,
     fetchFollowedChannelsStatus,
     fetchTopChannelsStatus,
+    topChannelsLanguage,
     validateToken,
     getTopChannels,
     getFollowedChannels,
