@@ -47,7 +47,7 @@ const currentView = computed(() => {
   max-height: 500px;
 }
 .content-area {
-  padding-top: 10px;
+  padding-top: 5px;
   flex-grow: 1;
   overflow-y: auto;
 }

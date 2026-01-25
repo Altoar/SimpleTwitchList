@@ -3,7 +3,8 @@ import {
   faHeart,
   faArrowsRotate,
   faSpinner,
-  faArrowRightFromBracket
+  faArrowRightFromBracket,
+  faTrophy
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faTwitch } from "@fortawesome/free-brands-svg-icons";
@@ -16,7 +17,8 @@ library.add(
   faArrowsRotate,
   faSpinner,
   faArrowRightFromBracket,
-  faTwitch
+  faTwitch,
+  faTrophy
 );
 
 export default FontAwesomeIcon;

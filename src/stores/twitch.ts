@@ -6,7 +6,7 @@ import axios from "axios";
 
 const callApi = useApi();
 
-export interface TwitchApiFollowedChannel {
+export interface TwitchApiStream {
   id: string;
   user_id: string;
   user_login: string;
@@ -24,8 +24,8 @@ export interface TwitchApiFollowedChannel {
   is_mature: boolean;
 }
 
-export interface TwitchApiFollowedChannelsResponse {
-  data: TwitchApiFollowedChannel[];
+export interface TwitchApiStreamsResponse {
+  data: TwitchApiStream[];
   pagination: {
     cursor?: string;
   };
@@ -47,10 +47,15 @@ export interface TwitchUserApiResponse {
 
 export const useTwitchStore = defineStore("twitch", () => {
   const mainStore = useMainStore();
-  const followedChannels = ref<TwitchApiFollowedChannel[]>([]);
+  const followedChannels = ref<TwitchApiStream[]>([]);
+  const topChannels = ref<TwitchApiStream[]>([]);
+  const topChannelsCursor = ref<string | undefined>(undefined);
   const fetchFollowedChannelsStatus = ref<
     "idle" | "loading" | "error" | "success"
   >("idle");
+  const fetchTopChannelsStatus = ref<"idle" | "loading" | "error" | "success">(
+    "idle"
+  );
 
   async function validateToken(): Promise<boolean> {
     const mainStore = useMainStore();
@@ -66,6 +71,7 @@ export const useTwitchStore = defineStore("twitch", () => {
         expiresIn: response.data.expires_in,
         scopes: response.data.scopes
       };
+      mainStore.setStorageItem({ twitchData: mainStore.twitchData });
       return true;
     } catch (error) {
       mainStore.twitchData = null;
@@ -120,25 +126,21 @@ export const useTwitchStore = defineStore("twitch", () => {
       return;
     }
 
-    const allChannels: TwitchApiFollowedChannel[] = [];
+    const allChannels: TwitchApiStream[] = [];
     let cursor: string | undefined = undefined;
 
     do {
       fetchFollowedChannelsStatus.value = "loading";
 
       try {
-        const response: TwitchApiFollowedChannelsResponse =
-          await callApi<TwitchApiFollowedChannelsResponse>(
-            "/streams/followed",
-            "GET",
-            {
-              params: {
-                user_id: mainStore.twitchData?.user?.id,
-                first: 100,
-                after: cursor
-              }
+        const response: TwitchApiStreamsResponse =
+          await callApi<TwitchApiStreamsResponse>("/streams/followed", "GET", {
+            params: {
+              user_id: mainStore.twitchData?.user?.id,
+              first: 100,
+              after: cursor
             }
-          );
+          });
 
         allChannels.push(...response.data);
         cursor = response.pagination.cursor;
@@ -152,10 +154,48 @@ export const useTwitchStore = defineStore("twitch", () => {
     fetchFollowedChannelsStatus.value = "success";
     followedChannels.value = allChannels;
   }
+
+  async function getTopChannels(reset = false) {
+    if (fetchTopChannelsStatus.value === "loading") {
+      return;
+    }
+
+    if (reset) {
+      topChannelsCursor.value = undefined;
+    }
+    fetchTopChannelsStatus.value = "loading";
+
+    try {
+      const response = await callApi<TwitchApiStreamsResponse>(
+        "/streams",
+        "GET",
+        {
+          params: {
+            first: 25,
+            after: topChannelsCursor.value
+          }
+        }
+      );
+      if (reset) {
+        topChannels.value = response.data;
+      } else {
+        topChannels.value.push(...response.data);
+      }
+      topChannelsCursor.value = response.pagination.cursor;
+      fetchTopChannelsStatus.value = "success";
+    } catch (error) {
+      fetchTopChannelsStatus.value = "error";
+      console.error("Error fetching top channels:", error);
+    }
+  }
+
   return {
+    topChannels,
     followedChannels,
     fetchFollowedChannelsStatus,
+    fetchTopChannelsStatus,
     validateToken,
+    getTopChannels,
     getFollowedChannels,
     getTwitchUser
   };

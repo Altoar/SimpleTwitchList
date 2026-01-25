@@ -6,6 +6,7 @@
         title="Login with Twitch"
         :icon="['fab', 'twitch']"
         size="md"
+        primary
     /></BaseLink>
   </div>
 </template>

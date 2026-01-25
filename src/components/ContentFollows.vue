@@ -1,15 +1,19 @@
 <template>
-  <BaseButton
-    title="Refresh Follows"
-    size="sm"
-    icon="arrows-rotate"
-    :loading="twitchStore.fetchFollowedChannelsStatus === 'loading'"
-    @click="twitchStore.getFollowedChannels()" />
-
-  <StreamListItem
-    v-for="channel in twitchStore.followedChannels"
-    :key="channel.id"
-    :stream="channel" />
+  <div class="content-follows">
+    <div class="content-follows__header">
+      <BaseButton
+        size="sm"
+        square
+        transparent
+        icon="arrows-rotate"
+        :loading="twitchStore.fetchFollowedChannelsStatus === 'loading'"
+        @click="twitchStore.getFollowedChannels()" />
+    </div>
+    <StreamListItem
+      v-for="channel in twitchStore.followedChannels"
+      :key="channel.id"
+      :stream="channel" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -26,3 +30,14 @@ onBeforeMount(() => {
   twitchStore.getFollowedChannels();
 });
 </script>
+
+<style lang="scss" scoped>
+.content-follows {
+  &__header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 10px;
+    margin-bottom: 5px;
+  }
+}
+</style>

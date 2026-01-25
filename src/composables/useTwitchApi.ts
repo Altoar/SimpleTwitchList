@@ -12,6 +12,7 @@ export function useApi() {
     options: AxiosRequestConfig = {}
   ) {
     const mainStore = useMainStore();
+
     const response = await client.request<T>({
       url,
       method,

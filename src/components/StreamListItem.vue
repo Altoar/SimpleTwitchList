@@ -38,11 +38,11 @@
 </template>
 
 <script setup lang="ts">
-import { type TwitchApiFollowedChannel } from "@/stores/twitch";
+import { type TwitchApiStream } from "@/stores/twitch";
 import BaseLink from "@/ui/BaseLink.vue";
 
 const props = defineProps<{
-  stream: TwitchApiFollowedChannel;
+  stream: TwitchApiStream;
 }>();
 
 function thumbnail(url: string, width: number, height: number) {

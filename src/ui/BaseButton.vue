@@ -13,13 +13,21 @@ const props = defineProps<{
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   icon?: string | [string, string];
+  square?: boolean;
+  transparent?: boolean;
+  primary?: boolean;
+  secondary?: boolean;
 }>();
 
 const classes = computed(() => {
   return {
     "base-button": true,
     [`base-button--${props.size || "md"}`]: true,
-    "base-button--loading": props.loading || false
+    "base-button--loading": props.loading || false,
+    "base-button--square": props.square || false,
+    "base-button--transparent": props.transparent || false,
+    "base-button--primary": props.primary || false,
+    "base-button--secondary": props.secondary || false
   };
 });
 </script>
@@ -27,13 +35,34 @@ const classes = computed(() => {
 <style lang="scss" scoped>
 .base-button {
   padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
+  background-color: transparent;
+  color: var(--text-primary);
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s;
+
+  &--primary {
+    background-color: var(--button-primary);
+    &:hover {
+      background-color: var(--button-primary-hover);
+    }
+  }
+
+  &--secondary {
+    background-color: var(--button-secondary);
+    &:hover {
+      background-color: var(--button-secondary-hover);
+    }
+  }
+
+  &--transparent {
+    background-color: transparent;
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
 
   &--sm {
     font-size: 12px;
@@ -48,8 +77,11 @@ const classes = computed(() => {
     padding: 14px 28px;
   }
 
-  &:hover {
-    background-color: #2980b9;
+  &--square {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 </style>
