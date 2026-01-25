@@ -34,33 +34,57 @@ export const useTwitchStore = defineStore("twitch", () => {
   const mainStore = useMainStore();
 
   const followedChannels = ref<TwitchApiFollowedChannel[]>([]);
+  const fetchFollowedChannelsStatus = ref<
+    "idle" | "loading" | "error" | "success"
+  >("idle");
 
   async function getFollowedChannels() {
+    if (!mainStore.isLoggedIn) {
+      console.warn(
+        "User is not logged in to Twitch, cannot fetch followed channels"
+      );
+      return;
+    }
+
+    if (fetchFollowedChannelsStatus.value === "loading") {
+      return;
+    }
+
     const allChannels: TwitchApiFollowedChannel[] = [];
     let cursor: string | undefined = undefined;
 
     do {
-      const response: TwitchApiFollowedChannelsResponse =
-        await callApi<TwitchApiFollowedChannelsResponse>(
-          "/streams/followed",
-          "GET",
-          {
-            params: {
-              user_id: mainStore.twitchData?.user?.id,
-              first: 100,
-              after: cursor
-            }
-          }
-        );
+      fetchFollowedChannelsStatus.value = "loading";
 
-      allChannels.push(...response.data);
-      cursor = response.pagination.cursor;
+      try {
+        const response: TwitchApiFollowedChannelsResponse =
+          await callApi<TwitchApiFollowedChannelsResponse>(
+            "/streams/followed",
+            "GET",
+            {
+              params: {
+                user_id: mainStore.twitchData?.user?.id,
+                first: 100,
+                after: cursor
+              }
+            }
+          );
+
+        allChannels.push(...response.data);
+        cursor = response.pagination.cursor;
+      } catch (error) {
+        console.error("Error fetching followed channels:", error);
+        fetchFollowedChannelsStatus.value = "error";
+        return;
+      }
     } while (cursor);
 
+    fetchFollowedChannelsStatus.value = "success";
     followedChannels.value = allChannels;
   }
   return {
     followedChannels,
+    fetchFollowedChannelsStatus,
     getFollowedChannels
   };
 });

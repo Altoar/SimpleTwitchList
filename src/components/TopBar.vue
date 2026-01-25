@@ -3,7 +3,10 @@
     <div class="title">Twitch Live List</div>
     <div class="user" v-if="mainStore.isLoggedIn">
       {{ mainStore.twitchData?.user?.displayName }}
-      <BaseButton title="Logout" size="sm" @click="mainStore.logoutTwitch()" />
+      <BaseButton
+        icon="arrow-right-from-bracket"
+        size="sm"
+        @click="mainStore.logoutTwitch()" />
     </div>
     <BaseLink :href="mainStore.authLink" v-else
       ><BaseButton title="Login with Twitch" size="sm"

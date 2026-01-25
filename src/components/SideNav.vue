@@ -1,18 +1,35 @@
 <template>
   <div class="sidenav">
     <div class="sidenav__navigation">
-      <a href="#/follows" class="sidenav__nav-item">Follows</a>
-      <a href="#/browse" class="sidenav__nav-item">Browse</a>
-      <a href="#/follows" class="sidenav__nav-item">Follows</a>
+      <a
+        :href="item.link"
+        class="sidenav__nav-item"
+        :class="{
+          'sidenav__nav-item--active': props.currentPath === item.link
+        }"
+        v-for="item in nav"
+        :key="item.name"
+        ><Icon :icon="item.icon"
+      /></a>
     </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from "vue";
+
+const props = defineProps<{
+  currentPath: string;
+}>();
+const nav = ref([
+  { name: "Follows", icon: "heart", link: "#/follows" },
+  { name: "Browse", icon: "compass", link: "#/browse" }
+]);
+</script>
 
 <style scoped lang="scss">
 .sidenav {
-  width: 50px;
+  width: 40px;
   border-right: 1px solid var(--border-primary);
   height: 100%;
 
@@ -28,8 +45,10 @@
     font-size: 14px;
     text-align: center;
     text-decoration: none;
+    width: 100%;
 
-    &:hover {
+    &:hover,
+    &--active {
       background-color: var(--background-secondary);
       color: var(--accent-color);
     }

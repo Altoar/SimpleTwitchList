@@ -1,7 +1,7 @@
 <template>
   <TopBar />
   <div class="main-content">
-    <SideNav />
+    <SideNav :current-path="currentPath" />
     <div class="content-area">
       <component :is="currentView" />
     </div>
@@ -42,8 +42,8 @@ const currentView = computed(() => {
   max-height: 500px;
 }
 .content-area {
+  padding-top: 10px;
   flex-grow: 1;
-  padding: 10px;
   overflow-y: auto;
 }
 </style>

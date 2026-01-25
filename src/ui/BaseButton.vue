@@ -1,14 +1,27 @@
 <template>
-  <button class="base-button" :class="`base-button--${props.size || 'md'}`">
+  <button :class="classes" :disabled="props.loading">
+    <Icon v-if="props.icon && !props.loading" :icon="props.icon"></Icon>
+    <Icon v-else-if="props.loading" icon="spinner" spin></Icon>
     {{ props.title }}
   </button>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 const props = defineProps<{
-  title: string;
+  title?: string;
   size?: "sm" | "md" | "lg";
+  loading?: boolean;
+  icon?: string;
 }>();
+
+const classes = computed(() => {
+  return {
+    "base-button": true,
+    [`base-button--${props.size || "md"}`]: true,
+    "base-button--loading": props.loading || false
+  };
+});
 </script>
 
 <style lang="scss" scoped>
