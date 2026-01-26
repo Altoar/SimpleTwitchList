@@ -5,6 +5,7 @@
         :href="item.link"
         class="sidenav__nav-item"
         :title="item.name"
+        v-tooltip.right="item.name"
         :class="{
           'sidenav__nav-item--active': props.currentPath === item.link
         }"

@@ -45,6 +45,7 @@ onBeforeMount(async () => {
 
 <style lang="scss">
 @use "./assets/style.scss";
+@import "floating-vue/dist/style.css";
 
 html,
 body,

@@ -2,6 +2,7 @@
   <div class="content-categories">
     <InvisibleButton
       v-for="category in twitchStore.topCategories"
+      v-tooltip.bottom="category.name"
       :key="category.id"
       @click="goToCategory(category.id, category.name)">
       <CategoryBox :category="category"
@@ -10,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeMount } from "vue";
+import { onBeforeMount } from "vue";
 import { useTwitchStore } from "@/stores/twitch";
 import CategoryBox from "./CategoryBox.vue";
 import InvisibleButton from "@/ui/InvisibleButton.vue";

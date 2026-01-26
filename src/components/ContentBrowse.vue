@@ -9,6 +9,7 @@
           size="sm"
           square
           transparent
+          v-tooltip.bottom-end="'All Categories'"
           v-if="twitchStore.topChannelsCategory.id !== 'all'"
           icon="rotate-left"
           @click="twitchStore.resetTopChannelsCategory" />
@@ -32,6 +33,7 @@
           square
           transparent
           icon="arrows-rotate"
+          v-tooltip.bottom-end="'Refresh'"
           :loading="twitchStore.fetchTopChannelsStatus === 'loading'"
           @click="
             twitchStore.getTopChannels({

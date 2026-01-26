@@ -7,6 +7,11 @@
           size="sm"
           square
           transparent
+          v-tooltip.bottom-end="
+            twitchStore.isFollowedChannelsReverseOrder
+              ? 'Sort Descending'
+              : 'Sort Ascending'
+          "
           :icon="
             twitchStore.isFollowedChannelsReverseOrder
               ? 'arrow-down-1-9'
@@ -21,6 +26,7 @@
           size="sm"
           square
           transparent
+          v-tooltip.bottom-end="'Refresh'"
           icon="arrows-rotate"
           :loading="twitchStore.fetchFollowedChannelsStatus === 'loading'"
           @click="twitchStore.getFollowedChannels()" />
