@@ -29,7 +29,7 @@
           v-tooltip.bottom-end="'Refresh'"
           icon="arrows-rotate"
           :loading="twitchStore.fetchFollowedChannelsStatus === 'loading'"
-          @click="twitchStore.getFollowedChannels()" />
+          @click="twitchStore.getFollowedLiveChannels()" />
       </div>
     </div>
     <div
@@ -63,7 +63,7 @@ import ContentLoading from "./ContentLoading.vue";
 const twitchStore = useTwitchStore();
 
 onBeforeMount(() => {
-  twitchStore.getFollowedChannels();
+  twitchStore.getFollowedLiveChannels();
 });
 </script>
 

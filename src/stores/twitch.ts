@@ -96,7 +96,9 @@ export const useTwitchStore = defineStore("twitch", () => {
   }
 
   async function getTwitchUser() {
+    const mainStore = useMainStore();
     try {
+      console.log("Fetching Twitch user info...", mainStore.twitchAccessToken);
       const user = await callApi<{ data: TwitchUserApiResponse[] }>(
         "/users",
         "GET"
@@ -122,6 +124,7 @@ export const useTwitchStore = defineStore("twitch", () => {
         };
 
         mainStore.setStorageItem({ twitchData: mainStore.twitchData });
+        console.log("Fetched Twitch user info:", mainStore.twitchData.user);
       }
     } catch (error) {
       console.error("Error fetching Twitch user info:", error);
@@ -138,7 +141,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     });
   }
 
-  async function getFollowedChannels() {
+  async function getFollowedLiveChannels() {
     if (!mainStore.isLoggedIn) {
       console.warn(
         "User is not logged in to Twitch, cannot fetch followed channels"
@@ -275,7 +278,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     fetchTopChannelsLoadMoreStatus,
     validateToken,
     getTopChannels,
-    getFollowedChannels,
+    getFollowedLiveChannels,
     getTwitchUser,
     reverseFollowedChannelsOrder,
     getTopCategories,

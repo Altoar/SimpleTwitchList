@@ -1,6 +1,12 @@
 <template>
   <template v-if="accessToken">
-    <p>Successfully authenticated with token</p>
+    <ContentLoading v-if="mainStore.twitchAuthStatus === 'loading'" />
+    <template v-else-if="mainStore.twitchAuthStatus === 'success'">
+      <p>Successfully authenticated with token</p>
+    </template>
+    <template v-else-if="mainStore.twitchAuthStatus === 'error'">
+      <p>Error during authentication. Please try again</p>
+    </template>
   </template>
   <template v-else-if="authError">
     <p>Error during authentication. Please try again</p>
@@ -18,6 +24,7 @@ import { computed, onBeforeMount } from "vue";
 import BaseButton from "../ui/BaseButton.vue";
 import BaseLink from "../ui/BaseLink.vue";
 import { useMainStore } from "../stores/main";
+import ContentLoading from "../components/ContentLoading.vue";
 const mainStore = useMainStore();
 
 const accessToken = computed(() => {
@@ -33,7 +40,6 @@ const authError = computed(() => {
 
 onBeforeMount(() => {
   if (accessToken.value) {
-    console.log("Access Token found: " + accessToken.value);
     mainStore.authenticateTwitch(accessToken.value);
   }
 });

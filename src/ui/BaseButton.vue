@@ -69,12 +69,12 @@ const classes = computed(() => {
     padding: 6px 12px;
   }
   &--md {
-    font-size: 16px;
-    padding: 10px 20px;
+    font-size: 14px;
+    padding: 8px 16px;
   }
   &--lg {
-    font-size: 20px;
-    padding: 14px 28px;
+    font-size: 18px;
+    padding: 12px 22px;
   }
 
   &--square {

@@ -16,12 +16,14 @@
     </div>
     <div class="sidenav__bottomnav">
       <a
-        href="#"
+        href="#/settings"
         class="sidenav__nav-item"
         v-if="mainStore.isLoggedIn"
-        @click.prevent="mainStore.logoutTwitch()"
-        title="Logout"
-        ><Icon :icon="'arrow-right-from-bracket'" size="lg" />
+        :class="{
+          'sidenav__nav-item--active': props.currentPath === '#/settings'
+        }"
+        v-tooltip.right="'Settings'"
+        ><Icon :icon="'gear'" size="lg" />
       </a>
     </div>
   </div>

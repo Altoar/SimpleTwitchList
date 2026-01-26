@@ -19,13 +19,15 @@ import ContentFollows from "@/components/ContentFollows.vue";
 import ContentBrowse from "@/components/ContentBrowse.vue";
 import ContentCategories from "@/components/ContentCategories.vue";
 import ContentNotLoggedIn from "@/components/ContentNotLoggedIn.vue";
+import ContentSettings from "@/components/ContentSettings.vue";
 import { useMainStore } from "@/stores/main";
 const mainStore = useMainStore();
 
 const routes = {
   "/follows": ContentFollows,
   "/browse": ContentBrowse,
-  "/categories": ContentCategories
+  "/categories": ContentCategories,
+  "/settings": ContentSettings
 };
 
 const currentPath = ref(window.location.hash);
