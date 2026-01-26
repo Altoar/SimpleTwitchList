@@ -81,6 +81,7 @@ export const useTwitchStore = defineStore("twitch", () => {
       });
 
       mainStore.twitchData = {
+        ...mainStore.twitchData,
         clientId: response.data.client_id,
         expiresIn: response.data.expires_in,
         scopes: response.data.scopes
@@ -88,8 +89,7 @@ export const useTwitchStore = defineStore("twitch", () => {
       mainStore.setStorageItem({ twitchData: mainStore.twitchData });
       return true;
     } catch (error) {
-      mainStore.twitchData = null;
-      mainStore.twitchAccessToken = "";
+      mainStore.logoutTwitch();
       console.error("Token validation failed:", error);
       return false;
     }

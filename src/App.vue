@@ -27,19 +27,24 @@ const currentView = computed(() => {
 });
 
 onBeforeMount(async () => {
+  const accessToken = await mainStore.getStorageItem("twitchAccessToken");
+
+  // Only set the access token in the store if it exists in storage to avoid overwriting with null
+  if (accessToken) {
+    mainStore.twitchAccessToken = accessToken;
+    twitchStore.validateToken();
+
+    const twitchData: TwitchData | null =
+      await mainStore.getStorageItem("twitchData");
+
+    mainStore.setTwitchData(twitchData);
+  }
+
+  // Load user preferences from storage
   const isFollowedChannelsReverseOrder = await mainStore.getStorageItem(
     "isFollowedChannelsReverseOrder"
   );
   twitchStore.isFollowedChannelsReverseOrder = !!isFollowedChannelsReverseOrder;
-
-  mainStore.twitchAccessToken =
-    await mainStore.getStorageItem("twitchAccessToken");
-
-  const twitchData: TwitchData | null =
-    await mainStore.getStorageItem("twitchData");
-
-  console.log("Twitch Data: ", twitchData);
-  mainStore.setTwitchData(twitchData);
 });
 </script>
 
