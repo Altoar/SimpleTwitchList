@@ -37,7 +37,7 @@ const props = defineProps<{
 }>();
 const nav = ref([
   { name: "Follows", icon: "heart", link: "#/follows" },
-  { name: "Browse", icon: "trophy", link: "#/browse" },
+  { name: "Browse", icon: "list", link: "#/browse" },
   { name: "Categories", icon: "gamepad", link: "#/categories" }
 ]);
 </script>

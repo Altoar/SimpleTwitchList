@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import { useApi } from "@/composables/useTwitchApi";
 import { useMainStore } from "./main";
@@ -52,6 +52,8 @@ export interface TwitchUserApiResponse {
   created_at: string;
 }
 
+type FetchStatus = "idle" | "loading" | "error" | "success";
+
 export const useTwitchStore = defineStore("twitch", () => {
   const mainStore = useMainStore();
   const followedChannels = ref<TwitchApiStream[]>([]);
@@ -64,15 +66,10 @@ export const useTwitchStore = defineStore("twitch", () => {
     name: "Top Channels"
   });
   const topCategories = ref<TwitchApiCategory[]>([]);
-  const fetchFollowedChannelsStatus = ref<
-    "idle" | "loading" | "error" | "success"
-  >("idle");
-  const fetchTopChannelsStatus = ref<"idle" | "loading" | "error" | "success">(
-    "idle"
-  );
-  const fetchTopCategoriesStatus = ref<
-    "idle" | "loading" | "error" | "success"
-  >("idle");
+  const fetchFollowedChannelsStatus = ref<FetchStatus>("idle");
+  const fetchTopChannelsStatus = ref<FetchStatus>("idle");
+  const fetchTopChannelsLoadMoreStatus = ref<FetchStatus>("idle");
+  const fetchTopCategoriesStatus = ref<FetchStatus>("idle");
 
   async function validateToken(): Promise<boolean> {
     const mainStore = useMainStore();
@@ -193,14 +190,19 @@ export const useTwitchStore = defineStore("twitch", () => {
     game = "all",
     reset = false
   }) {
-    if (fetchTopChannelsStatus.value === "loading") {
+    if (
+      fetchTopChannelsStatus.value === "loading" ||
+      fetchTopChannelsLoadMoreStatus.value === "loading"
+    ) {
       return;
     }
 
     if (reset) {
       topChannelsCursor.value = undefined;
+      fetchTopChannelsStatus.value = "loading";
+    } else {
+      fetchTopChannelsLoadMoreStatus.value = "loading";
     }
-    fetchTopChannelsStatus.value = "loading";
 
     try {
       const response = await callApi<TwitchApiResponse>("/streams", "GET", {
@@ -218,8 +220,10 @@ export const useTwitchStore = defineStore("twitch", () => {
       }
       topChannelsCursor.value = response.pagination.cursor;
       fetchTopChannelsStatus.value = "success";
+      fetchTopChannelsLoadMoreStatus.value = "success";
     } catch (error) {
       fetchTopChannelsStatus.value = "error";
+      fetchTopChannelsLoadMoreStatus.value = "error";
       console.error("Error fetching top channels:", error);
     }
   }
@@ -268,6 +272,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     isFollowedChannelsReverseOrder,
     topCategories,
     topChannelsCategory,
+    fetchTopChannelsLoadMoreStatus,
     validateToken,
     getTopChannels,
     getFollowedChannels,

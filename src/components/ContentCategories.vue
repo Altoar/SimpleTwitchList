@@ -33,8 +33,8 @@ function goToCategory(categoryId: string, name: string) {
 
 <style lang="scss" scoped>
 .content-categories {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   padding: 10px;
 }

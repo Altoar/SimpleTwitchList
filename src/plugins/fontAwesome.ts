@@ -4,12 +4,13 @@ import {
   faArrowsRotate,
   faSpinner,
   faArrowRightFromBracket,
-  faTrophy,
+  faList,
   faArrowDown19,
   faArrowDown91,
   faGamepad,
   faRotateLeft,
-  faGear
+  faGear,
+  faAddressBook
 } from "@fortawesome/free-solid-svg-icons";
 
 import { faTwitch } from "@fortawesome/free-brands-svg-icons";
@@ -23,12 +24,13 @@ library.add(
   faSpinner,
   faArrowRightFromBracket,
   faTwitch,
-  faTrophy,
+  faList,
   faArrowDown19,
   faArrowDown91,
   faGamepad,
   faRotateLeft,
-  faGear
+  faGear,
+  faAddressBook
 );
 
 export default FontAwesomeIcon;

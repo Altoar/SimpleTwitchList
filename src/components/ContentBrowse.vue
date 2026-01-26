@@ -22,8 +22,8 @@
             () => {
               twitchStore.getTopChannels({
                 reset: true,
-                language: twitchStore.topChannelsLanguage as string,
-                game: categoryId as string
+                language: twitchStore.topChannelsLanguage,
+                game: categoryId
               });
             }
           " />
@@ -38,13 +38,17 @@
           @click="
             twitchStore.getTopChannels({
               reset: true,
-              language: twitchStore.topChannelsLanguage as string,
-              game: categoryId as string
+              language: twitchStore.topChannelsLanguage,
+              game: categoryId
             })
           " />
       </div>
     </div>
-    <ContentLoading v-if="twitchStore.fetchTopChannelsStatus === 'loading'" />
+    <ContentLoading
+      v-if="
+        twitchStore.fetchTopChannelsStatus === 'loading' &&
+        twitchStore.fetchTopChannelsLoadMoreStatus !== 'loading'
+      " />
     <template v-else>
       <StreamListItem
         v-for="channel in twitchStore.topChannels"
@@ -57,10 +61,11 @@
           title="Load More"
           primary
           icon="arrows-rotate"
-          :loading="false"
+          :loading="twitchStore.fetchTopChannelsLoadMoreStatus === 'loading'"
           @click="
             twitchStore.getTopChannels({
-              language: twitchStore.topChannelsLanguage as string
+              language: twitchStore.topChannelsLanguage,
+              game: categoryId
             })
           " />
       </div>
