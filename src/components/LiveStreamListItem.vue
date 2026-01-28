@@ -100,7 +100,7 @@ function calculateLiveDuration(startedAt: string) {
     &-viewcount {
       position: absolute;
       font-weight: bold;
-      bottom: 0.5rem;
+      bottom: 0.4rem;
       right: 0.3rem;
       background-color: #000000a1;
       color: #ff4a4a;
@@ -112,7 +112,7 @@ function calculateLiveDuration(startedAt: string) {
     &-liveduration {
       position: absolute;
       font-weight: bold;
-      bottom: 0.5rem;
+      bottom: 0.4rem;
       left: 0.3rem;
       background-color: #000000a1;
       color: var(--text-secondary);

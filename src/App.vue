@@ -22,7 +22,6 @@ const routes: { [key: string]: Component } = {
 
 const currentView = computed(() => {
   const path = window.location.pathname.slice(1); // Remove '/' from the beginning
-  console.log("Current path:", path);
   return routes[path] || (() => import("./views/NotFound.vue"));
 });
 

@@ -1,27 +1,85 @@
-// Connect to Twitch EventSub Websocket for real-time updates when channels go live
-// import { setupTwitchEventSubWebSocket } from "./twitch-websocket.js";
-// setupTwitchEventSubWebSocket();
+let allLiveChannelsDetails = {};
 
-async function validateToken(token) {
+async function createInterval() {
+  // If an alarm already exists, do not create a new one
+  const alarmExists = await chrome.alarms.get("fetch-followed-live-channels");
+
+  if (alarmExists) {
+    return;
+  }
+
+  console.log("Creating alarm to fetch followed live channels every minute");
+
+  chrome.alarms.create("fetch-followed-live-channels", {
+    delayInMinutes: 1,
+    periodInMinutes: 1
+  });
+
+  chrome.alarms.create("validate-twitch-token", {
+    periodInMinutes: 60
+  });
+}
+
+function resetData() {
+  chrome.storage.sync.remove("twitchData");
+  chrome.storage.session.remove("followedLiveChannels");
+  chrome.storage.sync.remove("twitchAccessToken");
+  chrome.alarms.clear("fetch-followed-live-channels");
+}
+
+async function init() {
+  chrome.action.setBadgeBackgroundColor({ color: "#9146ff" }, () => {});
+
+  chrome.action.setBadgeTextColor({ color: "#ffffff" }, () => {});
+
+  const isValid = await validateToken();
+
+  if (isValid) {
+    await createInterval();
+    console.log("Service worker started and interval created");
+  }
+}
+
+async function validateToken() {
+  const twitchAccessToken = await chrome.storage.sync.get([
+    "twitchAccessToken"
+  ]);
+
+  if (!twitchAccessToken.twitchAccessToken) {
+    console.warn("No Twitch access token found for validation");
+    return false;
+  }
+
   const response = await fetch("https://id.twitch.tv/oauth2/validate", {
     headers: {
-      Authorization: `OAuth ${token}`
+      Authorization: `OAuth ${twitchAccessToken.twitchAccessToken}`
     }
   });
 
   // If invalid, Twitch returns 401
   if (response.status === 401) {
     console.warn("Twitch token is invalid");
-    await chrome.storage.sync.set({
-      twitchData: null
-    });
+
+    resetData();
+
     return false;
   }
 
   const data = await response.json();
+  console.log("Twitch token is valid, data:", data);
+
+  // Check if follows scope is present
+  if (!data.scopes.includes("user:read:follows")) {
+    console.warn("Twitch token does not have required scopes");
+    resetData();
+    return false;
+  }
+
+  const existingTwitchData = await chrome.storage.sync.get(["twitchData"]);
 
   await chrome.storage.sync.set({
     twitchData: {
+      ...existingTwitchData.twitchData,
       clientId: data.client_id,
       scopes: data.scopes,
       expiresIn: data.expires_in
@@ -41,7 +99,8 @@ async function getTwitchUser(token) {
   });
 
   if (!response.ok) {
-    console.error("Failed to fetch Twitch user data");
+    console.warn("Failed to fetch Twitch user data");
+    resetData();
     return;
   }
 
@@ -67,19 +126,148 @@ async function getTwitchUser(token) {
   return data;
 }
 
+async function getFollowedLiveChannels() {
+  const twitchAccessToken = await chrome.storage.sync.get([
+    "twitchAccessToken"
+  ]);
+
+  const twitchData = await chrome.storage.sync.get(["twitchData"]);
+
+  if (
+    !twitchData.twitchData?.user?.id ||
+    !twitchAccessToken.twitchAccessToken
+  ) {
+    console.warn("Twitch data or access token not found");
+    resetData();
+    return;
+  }
+
+  console.log("Fetching followed live channels...");
+  let cursor = null;
+  let allLiveChannelsIds = [];
+
+  do {
+    const url = new URL("https://api.twitch.tv/helix/streams/followed");
+    url.searchParams.append("first", "100");
+    url.searchParams.append("user_id", twitchData.twitchData.user.id);
+
+    if (cursor) {
+      url.searchParams.append("after", cursor);
+    }
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: `Bearer ${twitchAccessToken.twitchAccessToken}`,
+        "Client-Id": twitchData.twitchData.clientId
+      }
+    });
+
+    if (!response.ok) {
+      console.warn("Failed to fetch followed live channels", response.error);
+
+      // If status code is 401, token is invalid
+      if (response.status === 401) {
+        console.warn("Twitch token is invalid during fetch");
+        resetData();
+        return;
+      }
+      return;
+    }
+
+    const data = await response.json();
+
+    // An array of user IDs of live followed channels
+    allLiveChannelsIds = allLiveChannelsIds.concat(
+      data.data.map((channel) => channel.user_id)
+    );
+
+    // Store detailed info about live followed channels in a global variable
+    data.data.forEach((channel) => {
+      allLiveChannelsDetails[channel.user_id] = channel;
+    });
+
+    cursor = data.pagination.cursor;
+  } while (cursor);
+
+  const numberOfLiveChannels = allLiveChannelsIds.length;
+  chrome.action.setBadgeText({ text: numberOfLiveChannels.toString() });
+
+  console.log("Fetched followed live channels:", allLiveChannelsDetails);
+
+  // Store the list of live followed channel IDs in session storage
+  await chrome.storage.session.set({
+    followedLiveChannels: allLiveChannelsIds
+  });
+}
+
+// Get Twitch Access Token from external authentication webpage
 chrome.runtime.onMessageExternal.addListener(async function (request) {
-  console.log("Message received", request);
   if (request.type === "SET_TWITCH_ACCESSTOKEN") {
-    const isTokenValid = await validateToken(request.data.token);
+    await chrome.storage.sync.set({ twitchAccessToken: request.data.token });
+
+    const isTokenValid = await validateToken();
 
     if (!isTokenValid) {
       console.error("Received invalid Twitch token");
       return;
     }
 
-    await chrome.storage.sync.set({ twitchAccessToken: request.data.token });
     await getTwitchUser(request.data.token);
+    await createInterval();
 
     console.log("User data fetched and stored");
+  }
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  // Get old and new values of "followedLiveChannels"
+  if (changes.followedLiveChannels) {
+    const oldChannels = changes.followedLiveChannels.oldValue || [];
+    const newChannels = changes.followedLiveChannels.newValue || [];
+
+    if (oldChannels.length === 0) {
+      // Initial load, do not send notifications
+      return;
+    }
+    // Determine which channels went live
+    const wentLiveChannels = newChannels.filter(
+      (channel) => !oldChannels.includes(channel)
+    );
+    console.log("Channels that went live:", wentLiveChannels);
+
+    wentLiveChannels.forEach((channelId) => {
+      console.log("Sending notification for channel ID:", channelId);
+      const channelDetails = allLiveChannelsDetails[channelId];
+      if (channelDetails) {
+        const notificationOptions = {
+          type: "basic",
+          title: `${channelDetails.user_name} is now live!`,
+          message: channelDetails.title,
+          iconUrl: channelDetails.thumbnail_url
+            .replace("{width}", "70")
+            .replace("{height}", "70"),
+          silent: true
+        };
+        chrome.notifications.create(null, notificationOptions);
+      }
+    });
+  }
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  init();
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+  init();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === "fetch-followed-live-channels") {
+    getFollowedLiveChannels();
+  }
+
+  if (alarm.name === "validate-twitch-token") {
+    validateToken();
   }
 });

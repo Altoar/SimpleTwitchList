@@ -10,7 +10,7 @@
   "externally_connectable": {
     "matches": ["http://localhost:5173/*"]
   },
-  "permissions": ["storage"],
+  "permissions": ["storage", "notifications", "alarms"],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
