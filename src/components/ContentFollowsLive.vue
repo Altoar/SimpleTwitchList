@@ -40,10 +40,13 @@
       ">
       You are not following any channels. Go follow some streamers on Twitch!
     </div>
-
+    <div
+      class="content-follows__empty"
+      v-else-if="twitchStore.fetchFollowedChannelsStatus === 'error'">
+      An error occurred. Please try again.
+    </div>
     <ContentLoading
       v-else-if="twitchStore.fetchFollowedChannelsStatus === 'loading'" />
-
     <template v-else>
       <LiveStreamListItem
         v-for="channel in twitchStore.followedLiveChannels"

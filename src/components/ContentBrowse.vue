@@ -41,6 +41,11 @@
         twitchStore.fetchTopChannelsStatus === 'loading' &&
         twitchStore.fetchTopChannelsLoadMoreStatus !== 'loading'
       " />
+    <div
+      class="content-browse__error"
+      v-else-if="twitchStore.fetchTopChannelsStatus === 'error'">
+      An error occurred. Please try again.
+    </div>
     <template v-else>
       <LiveStreamListItem
         v-for="channel in twitchStore.topChannels"
@@ -141,6 +146,13 @@ onBeforeMount(async () => {
     display: flex;
     gap: 5px;
   }
+
+  &__error {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
   &__footer {
     display: flex;
     justify-content: center;

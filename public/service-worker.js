@@ -36,8 +36,7 @@ async function init() {
 
   if (isValid) {
     getFollowedLiveChannels();
-    await createInterval();
-    console.log("Service worker started and interval created");
+    createInterval();
   }
 }
 
@@ -60,14 +59,11 @@ async function validateToken() {
   // If invalid, Twitch returns 401
   if (response.status === 401) {
     console.warn("Twitch token is invalid");
-
     resetData();
-
     return false;
   }
 
   const data = await response.json();
-  console.log("Twitch token is valid, data:", data);
 
   // Check if follows scope is present
   if (!data.scopes.includes("user:read:follows")) {
@@ -200,8 +196,8 @@ async function getFollowedLiveChannels() {
   });
 }
 
-// Get Twitch Access Token from external authentication webpage
 chrome.runtime.onMessageExternal.addListener(async function (request) {
+  // Get Twitch Access Token from external authentication webpage
   if (request.type === "SET_TWITCH_ACCESSTOKEN") {
     await chrome.storage.sync.set({ twitchAccessToken: request.data.token });
 
@@ -274,10 +270,8 @@ chrome.storage.onChanged.addListener(async (changes, namespace) => {
     // Default to true if silentNotifications doesn't exist
     const isSilent = silentNotifications.silentNotifications ?? true;
 
-    console.log("Channels that went live:", wentLiveChannels);
-
+    // Send desktop notification for each channel that went live
     wentLiveChannels.forEach((channelId) => {
-      console.log("Sending notification for channel ID:", channelId);
       const channelDetails = allLiveChannelsDetails[channelId];
       if (channelDetails) {
         const notificationOptions = {

@@ -2,8 +2,13 @@
   <div class="content-follows-all">
     <ContentLoading
       v-if="twitchStore.fetchFollowedChannelsStatus === 'loading'" />
+    <div
+      class="content-follows-all__error"
+      v-else-if="twitchStore.fetchFollowedChannelsStatus === 'error'">
+      An error occurred. Please try again.
+    </div>
     <template v-else>
-      <div class="content-follows__header">
+      <div class="content-follows-all__header">
         All Followed Channels ({{ twitchStore.followedChannels.length }})
       </div>
       <ChannelListItem
@@ -28,11 +33,15 @@ onBeforeMount(() => {
 
 <style lang="scss" scoped>
 .content-follows-all {
-  .content-follows__header {
+  &__header {
     font-weight: bold;
-
     margin-bottom: 5px;
     padding-left: 5px;
+  }
+  &__error {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
   }
 }
 </style>
