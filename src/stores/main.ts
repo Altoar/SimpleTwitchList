@@ -45,7 +45,7 @@ export const useMainStore = defineStore("main", () => {
 
   const authLink = computed(() => {
     const clientId = import.meta.env.VITE_TWITCH_CLIENT_ID;
-    const redirectUri = encodeURIComponent("http://localhost:5173/auth");
+    const redirectUri = import.meta.env.VITE_AUTH_URL;
     const scope = ["user:read:email", "user:read:follows"].join("+");
     return `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
   });
