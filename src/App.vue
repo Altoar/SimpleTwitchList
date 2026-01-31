@@ -6,6 +6,7 @@
 import { computed, onBeforeMount } from "vue";
 import Extension from "./views/Extension.vue";
 import Auth from "./views/Auth.vue";
+import NotFound from "./views/NotFound.vue";
 import type { Component } from "vue";
 import { useMainStore, type TwitchData } from "./stores/main";
 import { useTwitchStore } from "./stores/twitch";
@@ -22,7 +23,7 @@ const routes: { [key: string]: Component } = {
 
 const currentView = computed(() => {
   const path = window.location.pathname.slice(1); // Remove '/' from the beginning
-  return routes[path] || (() => import("./views/NotFound.vue"));
+  return routes[path] || NotFound;
 });
 
 onBeforeMount(async () => {
