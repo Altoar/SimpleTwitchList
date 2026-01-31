@@ -22,7 +22,9 @@ const routes: { [key: string]: Component } = {
 };
 
 const currentView = computed(() => {
-  const path = window.location.pathname.slice(1); // Remove '/' from the beginning
+  // Get the last part of the path
+  const path = window.location.pathname.split("/").pop() || "";
+
   return routes[path] || NotFound;
 });
 
