@@ -98,7 +98,7 @@ export const useTwitchStore = defineStore("twitch", () => {
   const fetchTopChannelsStatus = ref<FetchStatus>("idle");
   const fetchTopChannelsLoadMoreStatus = ref<FetchStatus>("idle");
   const fetchTopCategoriesStatus = ref<FetchStatus>("idle");
-  const fetchFavoritedLiveChannelsStatus = ref<FetchStatus>("idle");
+  const fetchFavoriteChannelsStatus = ref<FetchStatus>("idle");
 
   const favoriteChannelIds = ref<Set<string>>(new Set());
   const favoriteLiveChannels = ref<TwitchApiStream[]>([]);
@@ -220,7 +220,7 @@ export const useTwitchStore = defineStore("twitch", () => {
       : allChannels;
   }
 
-  async function getFollowedChannels() {
+  async function fetchFollowedChannels() {
     if (!mainStore.isLoggedIn) {
       console.warn(
         "User is not logged in to Twitch, cannot fetch followed channels"
@@ -413,7 +413,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     }
 
     try {
-      fetchFavoritedLiveChannelsStatus.value = "loading";
+      fetchFavoriteChannelsStatus.value = "loading";
 
       const channelIds = Array.from(favoriteChannelIds.value);
       const params = new URLSearchParams();
@@ -432,10 +432,10 @@ export const useTwitchStore = defineStore("twitch", () => {
         ? response.data.reverse()
         : response.data;
 
-      fetchFavoritedLiveChannelsStatus.value = "success";
+      fetchFavoriteChannelsStatus.value = "success";
       return response.data;
     } catch (error) {
-      fetchFavoritedLiveChannelsStatus.value = "error";
+      fetchFavoriteChannelsStatus.value = "error";
       console.error("Error fetching favorited channels:", error);
       return [];
     }
@@ -450,7 +450,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     });
   }
 
-  function fetchFavoritedChannels() {
+  function fetchFavoriteChannels() {
     if (favoriteChannelIds.value.size === 0) {
       favoriteChannels.value = [];
       return;
@@ -506,7 +506,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     disabledNotificationChannelIds,
     favoriteChannelIds,
     favoriteLiveChannels,
-    fetchFavoritedLiveChannelsStatus,
+    fetchFavoriteChannelsStatus,
     isFavoriteChannelsReverseOrder,
     favoriteChannels,
     validateToken,
@@ -516,10 +516,11 @@ export const useTwitchStore = defineStore("twitch", () => {
     reverseFollowedChannelsOrder,
     getTopCategories,
     resetTopChannelsCategory,
-    getFollowedChannels,
+    fetchFollowedChannels,
     addChannelToFavorites,
     removeChannelFromFavorites,
     fetchFavoritedLiveChannels,
-    reverseFavoriteChannelsOrder
+    reverseFavoriteChannelsOrder,
+    fetchFavoriteChannels
   };
 });

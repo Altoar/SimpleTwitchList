@@ -3,7 +3,9 @@
   <div class="main-content">
     <SideNav :current-path="currentPath" />
     <div class="content-area" v-if="mainStore.isLoggedIn">
-      <component :is="currentView" />
+      <KeepAlive>
+        <component :is="currentView" />
+      </KeepAlive>
     </div>
     <div class="content-area" v-else>
       <ContentNotLoggedIn />
@@ -31,7 +33,7 @@ const routes = {
   "#/browse": ContentBrowse,
   "#/categories": ContentCategories,
   "#/settings": ContentSettings,
-  "#/followed-all": ContentChannelsManagement
+  "#/directory": ContentChannelsManagement
 };
 
 const defaultRoute = "#/followed-live";

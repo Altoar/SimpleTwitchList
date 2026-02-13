@@ -19,24 +19,7 @@
       <div class="stream-list-item__info">
         <div class="stream-list-item__channel-name">
           <span>{{ props.stream.user_name }}</span>
-          <InvisibleButton
-            @click.prevent="
-              isFavorited
-                ? twitchStore.removeChannelFromFavorites(props.stream.user_id)
-                : twitchStore.addChannelToFavorites(props.stream.user_id)
-            "
-            class="stream-list-item__fav"
-            :class="{
-              'stream-list-item__fav--favorited': isFavorited
-            }">
-            <Icon
-              v-tooltip.bottom-end="
-                isFavorited ? 'Remove from Favorites' : 'Add to Favorites'
-              "
-              :icon="isFavorited ? 'star' : ['far', 'star']"
-              size="md"
-              title="Favorited Stream" />
-          </InvisibleButton>
+          <FavoriteButton :user-id="props.stream.user_id" />
         </div>
         <div class="stream-list-item__title">{{ props.stream.title }}</div>
         <div class="stream-list-item__category">
@@ -56,12 +39,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
 import { type TwitchApiStream } from "@/stores/twitch";
 import BaseLink from "@/ui/BaseLink.vue";
-import { useTwitchStore } from "@/stores/twitch";
-import InvisibleButton from "@/ui/InvisibleButton.vue";
-const twitchStore = useTwitchStore();
+import FavoriteButton from "./FavoriteButton.vue";
 
 const props = defineProps<{
   stream: TwitchApiStream;
@@ -72,10 +52,6 @@ function thumbnail(url: string, width: number, height: number) {
     .replace("{width}", width.toString())
     .replace("{height}", height.toString());
 }
-
-const isFavorited = computed(() => {
-  return twitchStore.favoriteChannelIds.has(props.stream.user_id);
-});
 
 function formatViewCount(count: number) {
   if (count >= 1000000) {
@@ -108,7 +84,7 @@ function calculateLiveDuration(startedAt: string) {
   &:hover {
     background-color: var(--background-secondary);
 
-    .stream-list-item__fav {
+    .favorite-button {
       opacity: 1;
     }
   }
@@ -173,6 +149,7 @@ function calculateLiveDuration(startedAt: string) {
     margin-left: 6px;
     max-width: 260px;
     overflow: hidden;
+    flex-grow: 1;
   }
 
   &__title {
@@ -190,26 +167,6 @@ function calculateLiveDuration(startedAt: string) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  &__fav {
-    margin-right: 2px;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    color: var(--text-secondary);
-
-    &:hover,
-    &--favorited {
-      color: var(--accent-color);
-    }
-
-    &--favorited {
-      opacity: 1;
-
-      &:hover {
-        color: var(--text-primary);
-      }
-    }
   }
 
   &__category {

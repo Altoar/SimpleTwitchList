@@ -40,7 +40,7 @@ const nav = ref([
   { name: "Favorites", icon: "star", link: "#/favorites" },
   { name: "Browse", icon: "list", link: "#/browse" },
   { name: "Categories", icon: "gamepad", link: "#/categories" },
-  { name: "All Followed", icon: "address-book", link: "#/followed-all" }
+  { name: "Directory", icon: "address-book", link: "#/directory" }
 ]);
 </script>
 

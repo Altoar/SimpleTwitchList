@@ -20,7 +20,7 @@
         </span>
       </div>
     </div>
-    <div class="channel-list-item__date">
+    <div class="channel-list-item__details" v-if="props.type === 'followed'">
       {{ formatDate(props.channel.followedAt) }}
       <BaseToggle
         v-model="props.channel.notificationsEnabled"
@@ -32,6 +32,11 @@
         @update:model-value="toggleNotifications($event as boolean)"
         :disabled="true" />
     </div>
+    <div
+      class="channel-list-item__details"
+      v-else-if="props.type === 'favorited'">
+      <FavoriteButton :user-id="props.channel.id" />
+    </div>
   </div>
 </template>
 
@@ -39,6 +44,7 @@
 import { type FollowedChannel } from "@/stores/twitch";
 import BaseLink from "@/ui/BaseLink.vue";
 import BaseToggle from "@/ui/BaseToggle.vue";
+import FavoriteButton from "./FavoriteButton.vue";
 import { useTwitchStore } from "@/stores/twitch";
 import { useMainStore } from "@/stores/main";
 const twitchStore = useTwitchStore();
@@ -46,6 +52,7 @@ const mainStore = useMainStore();
 
 const props = defineProps<{
   channel: FollowedChannel;
+  type: "followed" | "favorited";
 }>();
 
 function toggleNotifications(enabled: boolean) {
@@ -95,6 +102,12 @@ function formatDate(dateString: string) {
   padding: 4px 10px;
   border-bottom: 1px solid var(--border-primary);
 
+  &:hover {
+    .favorite-button {
+      opacity: 1;
+    }
+  }
+
   &__info {
     display: flex;
     align-items: center;
@@ -126,7 +139,7 @@ function formatDate(dateString: string) {
     color: var(--color-accent);
   }
 
-  &__date {
+  &__details {
     margin-left: auto;
     font-size: 12px;
     color: var(--text-secondary);

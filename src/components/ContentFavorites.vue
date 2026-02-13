@@ -34,7 +34,7 @@
           transparent
           v-tooltip.bottom-end="'Refresh'"
           icon="arrows-rotate"
-          :loading="twitchStore.fetchFavoritedLiveChannelsStatus === 'loading'"
+          :loading="twitchStore.fetchFavoriteChannelsStatus === 'loading'"
           @click="twitchStore.fetchFavoritedLiveChannels()" />
       </div>
     </div>
@@ -43,11 +43,11 @@
     </div>
     <div
       class="content-favorites__error"
-      v-else-if="twitchStore.fetchFavoritedLiveChannelsStatus === 'error'">
+      v-else-if="twitchStore.fetchFavoriteChannelsStatus === 'error'">
       An error occurred. Please try again.
     </div>
     <ContentLoading
-      v-else-if="twitchStore.fetchFavoritedLiveChannelsStatus === 'loading'" />
+      v-else-if="twitchStore.fetchFavoriteChannelsStatus === 'loading'" />
     <template v-else-if="twitchStore.favoriteLiveChannels.length === 0">
       None of your favorited channels are currently live.
     </template>

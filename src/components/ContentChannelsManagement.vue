@@ -1,38 +1,48 @@
 <template>
   <div class="content-channels-management">
-    <ContentLoading
-      v-if="twitchStore.fetchFollowedChannelsStatus === 'loading'" />
-    <div
-      class="content-channels-management__error"
-      v-else-if="twitchStore.fetchFollowedChannelsStatus === 'error'">
-      An error occurred. Please try again.
-    </div>
-    <template v-else>
-      <BaseTabNav v-model:activeTab="activeTab" :tabs="tabs" />
-      <template v-if="activeTab === 'followed'">
-        <div class="content-channels-management__header">
-          All Followed Channels ({{ twitchStore.followedChannels.length }})
-        </div>
+    <BaseTabNav v-model:activeTab="activeTab" :tabs="tabs" />
+
+    <template v-if="activeTab === 'followed'">
+      <div class="content-channels-management__header">
+        All Followed Channels ({{ twitchStore.followedChannels.length }})
+      </div>
+      <ContentLoading
+        v-if="twitchStore.fetchFollowedChannelsStatus === 'loading'" />
+      <div
+        class="content-channels-management__error"
+        v-else-if="twitchStore.fetchFollowedChannelsStatus === 'error'">
+        An error occurred. Please try again.
+      </div>
+      <tempalte v-else>
         <ChannelListItem
           v-for="channel in twitchStore.followedChannels"
+          type="followed"
           :key="channel.id"
-          :channel="channel" />
-      </template>
-      <template v-else-if="activeTab === 'favorited'">
-        <div class="content-channels-management__header">
-          Favorited Channels ({{ twitchStore.favoriteChannelIds.size }})
-        </div>
-        <ChannelListItem
-          v-for="channel in twitchStore.favoriteChannels"
-          :key="channel.id"
-          :channel="channel" />
-      </template>
+          :channel="channel"
+      /></tempalte>
+    </template>
+    <template v-else-if="activeTab === 'favorited'">
+      <div class="content-channels-management__header">
+        Favorited Channels ({{ twitchStore.favoriteChannelIds.size }})
+      </div>
+      <ContentLoading
+        v-if="twitchStore.fetchFavoriteChannelsStatus === 'loading'" />
+      <div
+        class="content-channels-management__error"
+        v-else-if="twitchStore.fetchFavoriteChannelsStatus === 'error'">
+        An error occurred. Please try again.
+      </div>
+      <ChannelListItem
+        v-for="channel in twitchStore.favoriteChannels"
+        type="favorited"
+        :key="channel.id"
+        :channel="channel" />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount } from "vue";
+import { onBeforeMount, watch } from "vue";
 import { useTwitchStore } from "@/stores/twitch";
 import ChannelListItem from "./ChannelListItem.vue";
 import ContentLoading from "./ContentLoading.vue";
@@ -48,7 +58,13 @@ const tabs = [
 ];
 
 onBeforeMount(() => {
-  twitchStore.getFollowedChannels();
+  twitchStore.fetchFollowedChannels();
+});
+
+watch(activeTab, (newTab) => {
+  if (newTab === "favorited") {
+    twitchStore.fetchFavoriteChannels();
+  }
 });
 </script>
 
