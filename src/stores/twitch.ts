@@ -99,6 +99,9 @@ export const useTwitchStore = defineStore("twitch", () => {
   const fetchTopChannelsLoadMoreStatus = ref<FetchStatus>("idle");
   const fetchTopCategoriesStatus = ref<FetchStatus>("idle");
   const fetchFavoriteChannelsStatus = ref<FetchStatus>("idle");
+  const twitchAuthStatus = ref<"idle" | "loading" | "error" | "success">(
+    "idle"
+  );
 
   const favoriteChannelIds = ref<Set<string>>(new Set());
   const favoriteLiveChannels = ref<TwitchApiStream[]>([]);
@@ -107,6 +110,8 @@ export const useTwitchStore = defineStore("twitch", () => {
 
   async function validateToken(): Promise<boolean> {
     const mainStore = useMainStore();
+
+    twitchAuthStatus.value = "loading";
 
     const twitchData = await mainStore.getStorageItem("twitchData");
 
@@ -124,10 +129,12 @@ export const useTwitchStore = defineStore("twitch", () => {
         scopes: response.data.scopes
       };
       mainStore.setStorageItem({ twitchData: mainStore.twitchData });
+      twitchAuthStatus.value = "success";
       return true;
     } catch (error) {
       mainStore.logoutTwitch();
       console.error("Token validation failed:", error);
+      twitchAuthStatus.value = "error";
       return false;
     }
   }
@@ -511,6 +518,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     fetchFavoriteChannelsStatus,
     isFavoriteChannelsReverseOrder,
     favoriteChannels,
+    twitchAuthStatus,
     validateToken,
     getTopChannels,
     fetchFollowedLiveChannels,

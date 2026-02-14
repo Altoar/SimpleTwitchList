@@ -2,7 +2,10 @@
   <TopBar />
   <div class="main-content">
     <SideNav :current-path="currentPath" />
-    <div class="content-area" v-if="mainStore.isLoggedIn">
+    <div class="content-area" v-if="twitchStore.twitchAuthStatus !== 'success'">
+      <ContentLoading />
+    </div>
+    <div class="content-area" v-else-if="mainStore.isLoggedIn">
       <KeepAlive include="ContentChannelsManagement">
         <component :is="currentView" />
       </KeepAlive>
@@ -24,8 +27,11 @@ import ContentCategories from "@/components/ContentCategories.vue";
 import ContentNotLoggedIn from "@/components/ContentNotLoggedIn.vue";
 import ContentSettings from "@/components/ContentSettings.vue";
 import ContentFavorites from "@/components/ContentFavorites.vue";
+import ContentLoading from "@/components/ContentLoading.vue";
 import { useMainStore } from "@/stores/main";
+import { useTwitchStore } from "@/stores/twitch";
 const mainStore = useMainStore();
+const twitchStore = useTwitchStore();
 
 const routes = {
   "#/followed-live": ContentFollowsLive,

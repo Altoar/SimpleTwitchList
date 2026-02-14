@@ -13,13 +13,18 @@
         v-else-if="twitchStore.fetchFollowedChannelsStatus === 'error'">
         An error occurred. Please try again.
       </div>
-      <tempalte v-else>
+      <div
+        class="content-channels-management__error"
+        v-else-if="twitchStore.followedChannels.length === 0">
+        You aren't following any channels yet.
+      </div>
+      <template v-else>
         <ChannelListItem
           v-for="channel in twitchStore.followedChannels"
           type="followed"
           :key="channel.id"
           :channel="channel"
-      /></tempalte>
+      /></template>
     </template>
     <template v-else-if="activeTab === 'favorited'">
       <div class="content-channels-management__header">
@@ -31,6 +36,11 @@
         class="content-channels-management__error"
         v-else-if="twitchStore.fetchFavoriteChannelsStatus === 'error'">
         An error occurred. Please try again.
+      </div>
+      <div
+        class="content-channels-management__error"
+        v-else-if="twitchStore.favoriteChannelIds.size === 0">
+        You haven't favorited any channels yet.
       </div>
       <ChannelListItem
         v-for="channel in twitchStore.favoriteChannels"
@@ -82,6 +92,7 @@ watch(activeTab, (newTab) => {
     padding: 20px;
     text-align: center;
     color: var(--text-secondary);
+    font-size: 14px;
   }
 }
 </style>

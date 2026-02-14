@@ -44,9 +44,14 @@
     </div>
     <ContentLoading
       v-else-if="twitchStore.fetchFavoriteChannelsStatus === 'loading'" />
-    <template v-else-if="twitchStore.favoriteLiveChannels.length === 0">
-      None of your favorited channels are currently live.
-    </template>
+    <div
+      class="content-favorites__empty"
+      v-else-if="twitchStore.favoriteLiveChannels.length === 0">
+      <p>None of your favorited channels are currently live.</p>
+      <a href="#/directory"
+        ><BaseButton title="Manage Favorites" primary size="sm"
+      /></a>
+    </div>
     <template v-else>
       <LiveStreamListItem
         v-for="channel in twitchStore.favoriteLiveChannels"
@@ -62,6 +67,7 @@ import { useTwitchStore } from "@/stores/twitch";
 import LiveStreamListItem from "./LiveStreamListItem.vue";
 import ContentLoading from "./ContentLoading.vue";
 import BaseButton from "@/ui/BaseButton.vue";
+import BaseLink from "@/ui/BaseLink.vue";
 
 const twitchStore = useTwitchStore();
 
@@ -105,6 +111,7 @@ onBeforeMount(() => {
     text-align: center;
     color: #888;
     margin-top: 2rem;
+    font-size: 14px;
   }
 }
 </style>

@@ -1,4 +1,7 @@
-import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  library,
+  type IconDefinition
+} from "@fortawesome/fontawesome-svg-core";
 import {
   faHeart,
   faArrowsRotate,
@@ -21,7 +24,6 @@ import { faTwitch } from "@fortawesome/free-brands-svg-icons";
 
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-/* add icons to the library */
 library.add(
   faHeart,
   faArrowsRotate,
@@ -37,7 +39,7 @@ library.add(
   faAddressBook,
   faCircleCheck,
   faStar,
-  faStarRegular
+  faStarRegular as IconDefinition
 );
 
 export default FontAwesomeIcon;
