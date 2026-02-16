@@ -56,6 +56,13 @@ onBeforeMount(async () => {
   mainStore.defaultPage = defaultPage || "#/followed-live";
   currentPath.value = cleanPath(window.location.hash);
   window.addEventListener("hashchange", handleHashChange);
+
+  // Fetch the non-default page's data in the background for the badge count
+  if (mainStore.defaultPage === "#/followed-live") {
+    await twitchStore.fetchFavoritedLiveChannels();
+  } else if (mainStore.defaultPage === "#/favorites") {
+    await twitchStore.fetchFollowedLiveChannels();
+  }
 });
 
 const currentView = computed(() => {

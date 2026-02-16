@@ -328,7 +328,8 @@ export const useTwitchStore = defineStore("twitch", () => {
   }) {
     if (
       fetchTopChannelsStatus.value === "loading" ||
-      fetchTopChannelsLoadMoreStatus.value === "loading"
+      fetchTopChannelsLoadMoreStatus.value === "loading" ||
+      twitchAuthStatus.value !== "success"
     ) {
       return;
     }
@@ -380,7 +381,10 @@ export const useTwitchStore = defineStore("twitch", () => {
   }
 
   async function getTopCategories() {
-    if (fetchTopChannelsStatus.value === "loading") {
+    if (
+      fetchTopChannelsStatus.value === "loading" ||
+      fetchTopCategoriesStatus.value === "loading"
+    ) {
       return;
     }
 
@@ -437,7 +441,8 @@ export const useTwitchStore = defineStore("twitch", () => {
   async function fetchFavoritedLiveChannels() {
     if (
       favoriteChannelIds.value.size === 0 ||
-      favoriteChannelIds.value.size > 100
+      favoriteChannelIds.value.size > 100 ||
+      twitchAuthStatus.value !== "success"
     ) {
       return;
     }
@@ -484,7 +489,10 @@ export const useTwitchStore = defineStore("twitch", () => {
   }
 
   function fetchFavoriteChannels() {
-    if (favoriteChannelIds.value.size === 0) {
+    if (
+      favoriteChannelIds.value.size === 0 ||
+      twitchAuthStatus.value !== "success"
+    ) {
       favoriteChannels.value = [];
       return;
     }

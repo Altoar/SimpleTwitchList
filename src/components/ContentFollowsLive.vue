@@ -57,12 +57,17 @@
 </template>
 
 <script setup lang="ts">
+import { onBeforeMount } from "vue";
 import { useTwitchStore } from "@/stores/twitch";
 import BaseButton from "@/ui/BaseButton.vue";
 import LiveStreamListItem from "./LiveStreamListItem.vue";
 import ContentLoading from "./ContentLoading.vue";
 
 const twitchStore = useTwitchStore();
+
+onBeforeMount(() => {
+  twitchStore.fetchFollowedLiveChannels();
+});
 </script>
 
 <style lang="scss" scoped>
