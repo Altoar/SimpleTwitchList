@@ -18,7 +18,8 @@
       </div>
       <div class="stream-list-item__info">
         <div class="stream-list-item__channel-name">
-          {{ props.stream.user_name }}
+          <span>{{ props.stream.user_name }}</span>
+          <FavoriteButton :user-id="props.stream.user_id" />
         </div>
         <div class="stream-list-item__title">{{ props.stream.title }}</div>
         <div class="stream-list-item__category">
@@ -40,6 +41,7 @@
 <script setup lang="ts">
 import { type TwitchApiStream } from "@/stores/twitch";
 import BaseLink from "@/ui/BaseLink.vue";
+import FavoriteButton from "./FavoriteButton.vue";
 
 const props = defineProps<{
   stream: TwitchApiStream;
@@ -81,6 +83,10 @@ function calculateLiveDuration(startedAt: string) {
 
   &:hover {
     background-color: var(--background-secondary);
+
+    .favorite-button {
+      opacity: 1;
+    }
   }
 
   &__thumbnail {
@@ -143,6 +149,7 @@ function calculateLiveDuration(startedAt: string) {
     margin-left: 6px;
     max-width: 260px;
     overflow: hidden;
+    flex-grow: 1;
   }
 
   &__title {
@@ -157,17 +164,23 @@ function calculateLiveDuration(startedAt: string) {
     color: var(--text-primary);
     font-size: 16px;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+
   &__category {
     color: var(--text-secondary);
     font-size: 14px;
   }
+
   &__tags {
     margin-top: 4px;
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
   }
+
   &__tag {
     display: inline-block;
     background-color: var(--background-secondary);

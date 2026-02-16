@@ -8,7 +8,7 @@ import Extension from "./views/Extension.vue";
 import Auth from "./views/Auth.vue";
 import NotFound from "./views/NotFound.vue";
 import type { Component } from "vue";
-import { useMainStore, type TwitchData } from "./stores/main";
+import { useMainStore } from "./stores/main";
 import { useTwitchStore } from "./stores/twitch";
 const twitchStore = useTwitchStore();
 
@@ -31,15 +31,18 @@ const currentView = computed(() => {
 onBeforeMount(async () => {
   const accessToken = await mainStore.getStorageItem("twitchAccessToken");
 
+  // Get the list of favorited channel IDs first before fetching live channels with fetchFavoritedLiveChannels()
+  const favoriteChannelIds =
+    await mainStore.getStorageItem("favoriteChannelIds");
+  twitchStore.favoriteChannelIds = new Set(favoriteChannelIds || []);
+
   // Only set the access token in the store if it exists in storage to avoid overwriting with null
   if (accessToken) {
     mainStore.twitchAccessToken = accessToken;
-    twitchStore.validateToken();
+    await twitchStore.validateToken();
 
-    const twitchData: TwitchData | null =
-      await mainStore.getStorageItem("twitchData");
-
-    mainStore.setTwitchData(twitchData);
+    twitchStore.fetchFollowedLiveChannels();
+    twitchStore.fetchFavoritedLiveChannels();
   }
 
   // Load user preferences from storage
@@ -64,6 +67,23 @@ onBeforeMount(async () => {
   );
   twitchStore.disabledNotificationChannelIds =
     disabledNotificationChannelIds || [];
+
+  const isFavoriteChannelsReverseOrder = await mainStore.getStorageItem(
+    "isFavoriteChannelsReverseOrder"
+  );
+  twitchStore.isFavoriteChannelsReverseOrder = !!isFavoriteChannelsReverseOrder;
+
+  const badgeLiveChannelsNumberType = await mainStore.getStorageItem(
+    "badgeLiveChannelsNumberType"
+  );
+  mainStore.badgeLiveChannelsNumberType =
+    badgeLiveChannelsNumberType || "followed-only";
+
+  const notificationChannelsType = await mainStore.getStorageItem(
+    "notificationChannelsType"
+  );
+  mainStore.notificationChannelsType =
+    notificationChannelsType || "followed-only";
 });
 </script>
 

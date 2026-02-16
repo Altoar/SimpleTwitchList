@@ -34,10 +34,18 @@ export const useMainStore = defineStore("main", () => {
 
   const isDesktopNotificationsEnabled = ref<boolean>(true);
   const isNotificationSilent = ref<boolean>(true);
+  const defaultPage = ref<"#/followed-live" | "#/favorites">("#/followed-live");
+  const badgeLiveChannelsNumberType = ref<
+    "followed-only" | "favorited-only" | "followed-and-favorited"
+  >("followed-only");
 
   const twitchAuthStatus = ref<"idle" | "loading" | "error" | "success">(
     "idle"
   );
+
+  const notificationChannelsType = ref<
+    "followed-only" | "favorited-only" | "followed-and-favorited"
+  >("followed-only");
 
   const isLoggedIn = computed(
     () => twitchData.value !== null && twitchData.value.user?.id
@@ -154,6 +162,40 @@ export const useMainStore = defineStore("main", () => {
     twitchData.value = data;
   }
 
+  function setDefaultPage(page: "#/followed-live" | "#/favorites") {
+    defaultPage.value = page;
+    setStorageItem({ defaultPage: page });
+  }
+
+  function setbadgeLiveChannelsNumberType(
+    option: "followed-only" | "favorited-only" | "followed-and-favorited"
+  ) {
+    const twitchStore = useTwitchStore();
+    badgeLiveChannelsNumberType.value = option;
+    setStorageItem({ badgeLiveChannelsNumberType: option });
+
+    if (option === "followed-only") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.followedLiveChannels.length)
+      });
+    } else if (option === "favorited-only") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.favoritedLiveChannelsCountForNavBadge)
+      });
+    } else if (option === "followed-and-favorited") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.uniqueFollowedAndFavoritedLiveChannelsCount)
+      });
+    }
+  }
+
+  function setNotificationChannelsType(
+    option: "followed-only" | "favorited-only" | "followed-and-favorited"
+  ) {
+    notificationChannelsType.value = option;
+    setStorageItem({ notificationChannelsType: option });
+  }
+
   return {
     twitchData,
     twitchAccessToken,
@@ -162,6 +204,9 @@ export const useMainStore = defineStore("main", () => {
     authLink,
     isDesktopNotificationsEnabled,
     isNotificationSilent,
+    defaultPage,
+    badgeLiveChannelsNumberType,
+    notificationChannelsType,
     authenticateTwitch,
     sendChromeMessage,
     setStorageItem,
@@ -169,6 +214,9 @@ export const useMainStore = defineStore("main", () => {
     setTwitchData,
     logoutTwitch,
     toggleDesktopNotifications,
-    toggleSilentNotifications
+    toggleSilentNotifications,
+    setDefaultPage,
+    setbadgeLiveChannelsNumberType,
+    setNotificationChannelsType
   };
 });
