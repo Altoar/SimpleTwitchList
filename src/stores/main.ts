@@ -170,8 +170,23 @@ export const useMainStore = defineStore("main", () => {
   function setbadgeLiveChannelsNumberType(
     option: "followed-only" | "favorited-only" | "followed-and-favorited"
   ) {
+    const twitchStore = useTwitchStore();
     badgeLiveChannelsNumberType.value = option;
     setStorageItem({ badgeLiveChannelsNumberType: option });
+
+    if (option === "followed-only") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.followedLiveChannels.length)
+      });
+    } else if (option === "favorited-only") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.favoritedLiveChannelsCountForNavBadge)
+      });
+    } else if (option === "followed-and-favorited") {
+      chrome.action.setBadgeText({
+        text: String(twitchStore.uniqueFollowedAndFavoritedLiveChannelsCount)
+      });
+    }
   }
 
   function setNotificationChannelsType(

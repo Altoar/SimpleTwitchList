@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { defineStore } from "pinia";
 import { useApi } from "@/composables/useTwitchApi";
 import { useMainStore } from "./main";
@@ -108,6 +108,17 @@ export const useTwitchStore = defineStore("twitch", () => {
   const favoriteChannels = ref<FollowedChannel[]>([]);
   const isFavoriteChannelsReverseOrder = ref(false);
   const favoritedLiveChannelsCountForNavBadge = ref(0);
+
+  const uniqueFollowedAndFavoritedLiveChannelsCount = computed(() => {
+    const followedIds = new Set(
+      followedLiveChannels.value.map((c) => c.user_id)
+    );
+    const favoritedIds = new Set(
+      favoriteLiveChannels.value.map((c) => c.user_id)
+    );
+    const uniqueIds = new Set([...followedIds, ...favoritedIds]);
+    return uniqueIds.size;
+  });
 
   async function validateToken(): Promise<boolean> {
     const mainStore = useMainStore();
@@ -533,6 +544,7 @@ export const useTwitchStore = defineStore("twitch", () => {
     favoriteChannels,
     twitchAuthStatus,
     favoritedLiveChannelsCountForNavBadge,
+    uniqueFollowedAndFavoritedLiveChannelsCount,
     validateToken,
     getTopChannels,
     fetchFollowedLiveChannels,
