@@ -144,13 +144,21 @@ async function fetchLiveChannels() {
   let channelsForBadgeNumbers = new Set();
   allLiveChannelsDetails = {};
 
-  const notificationChannelsType = (await chrome.storage.sync.get([
+  const notificationChannelsType = await chrome.storage.sync.get([
     "notificationChannelsType"
-  ])) || { notificationChannelsType: "followed-only" };
+  ]);
 
-  const badgeLiveChannelsNumberType = (await chrome.storage.sync.get([
+  if (!notificationChannelsType.notificationChannelsType) {
+    notificationChannelsType.notificationChannelsType = "followed-only";
+  }
+
+  const badgeLiveChannelsNumberType = await chrome.storage.sync.get([
     "badgeLiveChannelsNumberType"
-  ])) || { badgeLiveChannelsNumberType: "followed-only" };
+  ]);
+
+  if (!badgeLiveChannelsNumberType.badgeLiveChannelsNumberType) {
+    badgeLiveChannelsNumberType.badgeLiveChannelsNumberType = "followed-only";
+  }
 
   // Fetch followed live channels with pagination (100 channels per request) until there are no more pages left
   do {
@@ -260,7 +268,7 @@ async function fetchLiveChannels() {
   chrome.action.setBadgeText({ text: numberOfLiveChannels.toString() });
 
   // Store the list of live followed channel IDs in session storage
-  await chrome.storage.session.set({
+  chrome.storage.session.set({
     liveChannelIdsForNotifications: Array.from(allLiveChannelsIds)
   });
 }
