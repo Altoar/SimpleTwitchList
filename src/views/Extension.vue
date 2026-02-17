@@ -52,16 +52,24 @@ const handleHashChange = () => {
 };
 
 onBeforeMount(async () => {
+  const accessToken = await mainStore.getStorageItem("twitchAccessToken");
+
   const defaultPage = await mainStore.getStorageItem("defaultPage");
   mainStore.defaultPage = defaultPage || "#/followed-live";
   currentPath.value = cleanPath(window.location.hash);
   window.addEventListener("hashchange", handleHashChange);
 
-  // Fetch the non-default page's data in the background for the badge count
-  if (mainStore.defaultPage === "#/followed-live") {
-    await twitchStore.fetchFavoritedLiveChannels();
-  } else if (mainStore.defaultPage === "#/favorites") {
-    await twitchStore.fetchFollowedLiveChannels();
+  // Only set the access token in the store if it exists in storage to avoid overwriting with null
+  if (accessToken) {
+    mainStore.twitchAccessToken = accessToken;
+    await twitchStore.validateToken();
+
+    // Fetch the non-default page's data in the background for the badge count
+    if (currentPath.value === "#/followed-live") {
+      twitchStore.fetchFavoritedLiveChannels();
+    } else if (currentPath.value === "#/favorites") {
+      twitchStore.fetchFollowedLiveChannels();
+    }
   }
 });
 

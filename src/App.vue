@@ -29,21 +29,10 @@ const currentView = computed(() => {
 });
 
 onBeforeMount(async () => {
-  const accessToken = await mainStore.getStorageItem("twitchAccessToken");
-
   // Get the list of favorited channel IDs first before fetching live channels with fetchFavoritedLiveChannels()
   const favoriteChannelIds =
     await mainStore.getStorageItem("favoriteChannelIds");
   twitchStore.favoriteChannelIds = new Set(favoriteChannelIds || []);
-
-  // Only set the access token in the store if it exists in storage to avoid overwriting with null
-  if (accessToken) {
-    mainStore.twitchAccessToken = accessToken;
-    await twitchStore.validateToken();
-
-    twitchStore.fetchFollowedLiveChannels();
-    twitchStore.fetchFavoritedLiveChannels();
-  }
 
   // Load user preferences from storage
   const isFollowedChannelsReverseOrder = await mainStore.getStorageItem(
