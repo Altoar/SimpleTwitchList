@@ -89,8 +89,12 @@ export const useMainStore = defineStore("main", () => {
   }
 
   function logoutTwitch() {
+    const twitchStore = useTwitchStore();
     twitchAccessToken.value = "";
     twitchData.value = null;
+
+    twitchStore.followedLiveChannels = [];
+    twitchStore.favoritedLiveChannelsCountForNavBadge = 0;
 
     // Clear access token from chrome storage
     setStorageItem({ twitchAccessToken: "" });

@@ -2,7 +2,7 @@
   <TopBar />
   <div class="main-content">
     <SideNav :current-path="currentPath" />
-    <div class="content-area" v-if="twitchStore.twitchAuthStatus !== 'success'">
+    <div class="content-area" v-if="twitchStore.twitchAuthStatus === 'loading'">
       <ContentLoading />
     </div>
     <div class="content-area" v-else-if="mainStore.isLoggedIn">

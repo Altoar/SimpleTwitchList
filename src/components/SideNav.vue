@@ -14,12 +14,18 @@
         ><Icon :icon="item.icon" size="lg" />
         <div
           class="sidenav__live-count-badge"
-          v-if="item.link === '#/followed-live'">
+          v-if="
+            item.link === '#/followed-live' &&
+            twitchStore.followedLiveChannels.length > 0
+          ">
           {{ twitchStore.followedLiveChannels.length }}
         </div>
         <div
           class="sidenav__live-count-badge"
-          v-else-if="item.link === '#/favorites'">
+          v-else-if="
+            item.link === '#/favorites' &&
+            twitchStore.favoritedLiveChannelsCountForNavBadge > 0
+          ">
           {{ twitchStore.favoritedLiveChannelsCountForNavBadge }}
         </div>
       </a>
