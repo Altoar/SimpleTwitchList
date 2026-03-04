@@ -86,12 +86,13 @@ const currentView = computed(() => {
 <style scoped lang="scss">
 .extension-frame {
   width: 450px;
+  height: 100%;
+  min-height: 200px;
+  max-height: 550px;
 }
 .main-content {
   display: flex;
   height: 100%;
-  min-height: 200px;
-  max-height: 550px;
 }
 .content-area {
   padding-top: 5px;
