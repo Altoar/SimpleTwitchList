@@ -1,29 +1,34 @@
 <template>
   <BaseLink
-    :href="`https://www.twitch.tv/${props.stream.user_login}`"
+    :href="`https://www.twitch.tv/${props.stream.login}`"
     :title="props.stream.title"
     target="_blank">
     <div class="stream-list-item">
       <div class="stream-list-item__thumbnail">
         <img
-          :src="thumbnail(props.stream.thumbnail_url, 160, 90)"
+          :src="thumbnail(props.stream.thumbnailUrl, 160, 90)"
           alt="Stream Thumbnail"
           class="" />
         <div class="stream-list-item__thumbnail-liveduration">
-          {{ calculateLiveDuration(props.stream.started_at) }}
+          {{ calculateLiveDuration(props.stream.startedAt) }}
         </div>
         <div class="stream-list-item__thumbnail-viewcount">
-          {{ formatViewCount(props.stream.viewer_count) }}
+          {{ formatViewCount(props.stream.viewerCount) }}
         </div>
       </div>
       <div class="stream-list-item__info">
-        <div class="stream-list-item__channel-name">
-          <span>{{ props.stream.user_name }}</span>
-          <FavoriteButton :user-id="props.stream.user_id" />
+        <div class="stream-list-item__channel-top">
+          <img
+            class="stream-list-item__channel-avatar"
+            :src="resizeAvatar(props.stream.avatarUrl, 70)" />
+          <span class="stream-list-item__channel-name">{{
+            props.stream.displayName
+          }}</span>
+          <FavoriteButton :user-id="props.stream.userId" />
         </div>
         <div class="stream-list-item__title">{{ props.stream.title }}</div>
         <div class="stream-list-item__category">
-          {{ props.stream.game_name }}
+          {{ props.stream.gameName }}
         </div>
         <div class="stream-list-item__tags">
           <span
@@ -39,18 +44,22 @@
 </template>
 
 <script setup lang="ts">
-import { type TwitchApiStream } from "@/stores/twitch";
+import { type LiveChannel } from "@/stores/twitch";
 import BaseLink from "@/ui/BaseLink.vue";
 import FavoriteButton from "./FavoriteButton.vue";
 
 const props = defineProps<{
-  stream: TwitchApiStream;
+  stream: LiveChannel;
 }>();
 
 function thumbnail(url: string, width: number, height: number) {
   return url
     .replace("{width}", width.toString())
     .replace("{height}", height.toString());
+}
+
+function resizeAvatar(url: string, size: number = 70) {
+  return url.replace("300x300", `${size}x${size}`);
 }
 
 function formatViewCount(count: number) {
@@ -160,13 +169,26 @@ function calculateLiveDuration(startedAt: string) {
     text-overflow: ellipsis;
   }
 
+  &__channel-top {
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__channel-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 100%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
   &__channel-name {
     color: var(--text-primary);
     font-size: 16px;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    margin-right: auto;
   }
 
   &__category {
