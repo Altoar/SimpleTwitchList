@@ -7,7 +7,8 @@
     "
     class="favorite-button"
     :class="{
-      'favorite-button--favorited': isFavorited
+      'favorite-button--favorited': isFavorited,
+      'favorite-button--always-show': props.alwaysShow
     }">
     <Icon
       v-tooltip.bottom-end="
@@ -26,6 +27,7 @@ const twitchStore = useTwitchStore();
 
 const props = defineProps<{
   userId: string;
+  alwaysShow?: boolean;
 }>();
 
 const isFavorited = computed(() => {
@@ -49,6 +51,10 @@ const isFavorited = computed(() => {
     &:hover {
       color: var(--text-primary);
     }
+  }
+
+  &--always-show {
+    opacity: 1;
   }
 }
 </style>

@@ -18,11 +18,18 @@
           v-if="props.channel.broadcasterType === 'partner'">
           <Icon icon="circle-check" size="xs" />
         </span>
+        <span
+          class="channel-list-item__followed-since"
+          title="Followed since"
+          v-if="props.type === 'followed'"
+          >{{ formatDate(props.channel.followedAt) }}</span
+        >
       </div>
     </div>
-    <div class="channel-list-item__details" v-if="props.type === 'followed'">
-      {{ formatDate(props.channel.followedAt) }}
+    <div class="channel-list-item__details">
+      <FavoriteButton :user-id="props.channel.id" always-show />
       <BaseToggle
+        v-if="props.type === 'followed'"
         v-model="props.channel.notificationsEnabled"
         v-tooltip.bottom-end="
           props.channel.notificationsEnabled
@@ -31,11 +38,6 @@
         "
         @update:model-value="toggleNotifications($event as boolean)"
         :disabled="true" />
-    </div>
-    <div
-      class="channel-list-item__details"
-      v-else-if="props.type === 'favorited'">
-      <FavoriteButton :user-id="props.channel.id" />
     </div>
   </div>
 </template>
@@ -139,13 +141,16 @@ function formatDate(dateString: string) {
     color: var(--color-accent);
   }
 
+  &__followed-since {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
   &__details {
     margin-left: auto;
-    font-size: 12px;
-    color: var(--text-secondary);
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 15px;
   }
 }
 </style>
