@@ -99,7 +99,7 @@ export const useTwitchStore = defineStore("twitch", () => {
   const followedChannels = ref<FollowedChannel[]>([]);
   const disabledNotificationChannelIds = ref<string[]>([]);
   const isFollowedChannelsReverseOrder = ref(false);
-  const topChannels = ref<TwitchApiStream[]>([]);
+  const topChannels = ref<LiveChannel[]>([]);
   const topChannelsCursor = ref<string | undefined>(undefined);
   const topChannelsLanguage = ref<string>("all");
   const topChannelsCategory = ref({
@@ -394,11 +394,48 @@ export const useTwitchStore = defineStore("twitch", () => {
           language: language === "all" ? undefined : language
         }
       });
+
+      // Get profile pictures for each channel
+      const channelIds = (response.data as TwitchApiStream[]).map(
+        (channel) => channel.user_id
+      );
+
+      const userResponse = await callApi<{ data: TwitchUserApiResponse[] }>(
+        "/users",
+        "GET",
+        {
+          params: {
+            id: channelIds
+          }
+        }
+      );
+
+      const userMap: Record<string, TwitchUserApiResponse> = {};
+      userResponse.data.forEach((user) => {
+        userMap[user.id] = user;
+      });
+
+      const liveChannels: LiveChannel[] = (
+        response.data as TwitchApiStream[]
+      ).map((channel) => ({
+        userId: channel.user_id,
+        login: channel.user_login,
+        displayName: channel.user_name,
+        title: channel.title,
+        thumbnailUrl: channel.thumbnail_url,
+        gameName: channel.game_name,
+        viewerCount: channel.viewer_count,
+        startedAt: channel.started_at,
+        avatarUrl: userMap[channel.user_id]?.profile_image_url || "",
+        tags: channel.tags
+      }));
+
       if (reset) {
-        topChannels.value = response.data as TwitchApiStream[];
+        topChannels.value = liveChannels;
       } else {
-        topChannels.value.push(...(response.data as TwitchApiStream[]));
+        topChannels.value.push(...liveChannels);
       }
+
       topChannelsCursor.value = response.pagination.cursor;
       fetchTopChannelsStatus.value = "success";
       fetchTopChannelsLoadMoreStatus.value = "success";

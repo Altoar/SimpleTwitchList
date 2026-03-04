@@ -55,7 +55,7 @@
     <template v-else>
       <LiveStreamListItem
         v-for="channel in twitchStore.favoriteLiveChannels"
-        :key="channel.id"
+        :key="channel.userId"
         :stream="channel" />
     </template>
   </div>

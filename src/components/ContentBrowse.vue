@@ -49,7 +49,7 @@
     <template v-else>
       <LiveStreamListItem
         v-for="channel in twitchStore.topChannels"
-        :key="channel.id"
+        :key="channel.userId"
         :stream="channel" />
 
       <div class="content-browse__footer">
