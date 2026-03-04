@@ -78,15 +78,28 @@ export interface FollowedChannel {
   notificationsEnabled: boolean;
 }
 
+export interface LiveChannel {
+  login: string;
+  userId: string;
+  displayName: string;
+  title: string;
+  thumbnailUrl: string;
+  gameName: string;
+  viewerCount: number;
+  startedAt: string;
+  avatarUrl: string;
+  tags: string[];
+}
+
 type FetchStatus = "idle" | "loading" | "error" | "success";
 
 export const useTwitchStore = defineStore("twitch", () => {
   const mainStore = useMainStore();
-  const followedLiveChannels = ref<TwitchApiStream[]>([]);
+  const followedLiveChannels = ref<LiveChannel[]>([]);
   const followedChannels = ref<FollowedChannel[]>([]);
   const disabledNotificationChannelIds = ref<string[]>([]);
   const isFollowedChannelsReverseOrder = ref(false);
-  const topChannels = ref<TwitchApiStream[]>([]);
+  const topChannels = ref<LiveChannel[]>([]);
   const topChannelsCursor = ref<string | undefined>(undefined);
   const topChannelsLanguage = ref<string>("all");
   const topChannelsCategory = ref({
@@ -104,17 +117,17 @@ export const useTwitchStore = defineStore("twitch", () => {
   );
 
   const favoriteChannelIds = ref<Set<string>>(new Set());
-  const favoriteLiveChannels = ref<TwitchApiStream[]>([]);
+  const favoriteLiveChannels = ref<LiveChannel[]>([]);
   const favoriteChannels = ref<FollowedChannel[]>([]);
   const isFavoriteChannelsReverseOrder = ref(false);
   const favoritedLiveChannelsCountForNavBadge = ref(0);
 
   const uniqueFollowedAndFavoritedLiveChannelsCount = computed(() => {
     const followedIds = new Set(
-      followedLiveChannels.value.map((c) => c.user_id)
+      followedLiveChannels.value.map((c) => c.userId)
     );
     const favoritedIds = new Set(
-      favoriteLiveChannels.value.map((c) => c.user_id)
+      favoriteLiveChannels.value.map((c) => c.userId)
     );
     const uniqueIds = new Set([...followedIds, ...favoritedIds]);
     return uniqueIds.size;
@@ -207,33 +220,65 @@ export const useTwitchStore = defineStore("twitch", () => {
       return;
     }
 
-    const allChannels: TwitchApiStream[] = [];
-    let cursor: string | undefined = undefined;
+    const allChannels: LiveChannel[] = [];
+    let cursorFollowedChannels: string | undefined = undefined;
 
     do {
       fetchFollowedChannelsStatus.value = "loading";
 
       try {
-        const response: TwitchApiResponse = await callApi<TwitchApiResponse>(
-          "/streams/followed",
-          "GET",
-          {
+        const responseFollowedChannels: TwitchApiResponse =
+          await callApi<TwitchApiResponse>("/streams/followed", "GET", {
             params: {
               user_id: mainStore.twitchData?.user?.id,
               first: 100,
-              after: cursor
+              after: cursorFollowedChannels
+            }
+          });
+
+        // Get profile pictures for each followed channel
+        const channelIds = (
+          responseFollowedChannels.data as TwitchApiStream[]
+        ).map((channel) => channel.user_id);
+
+        const userResponse = await callApi<{ data: TwitchUserApiResponse[] }>(
+          "/users",
+          "GET",
+          {
+            params: {
+              id: channelIds
             }
           }
         );
 
-        allChannels.push(...(response.data as TwitchApiStream[]));
-        cursor = response.pagination.cursor;
+        (responseFollowedChannels.data as TwitchApiStream[]).forEach(
+          (channel) => {
+            const userInfo = userResponse.data.find(
+              (user) => user.id === channel.user_id
+            );
+
+            allChannels.push({
+              login: channel.user_login,
+              userId: channel.user_id,
+              displayName: channel.user_name,
+              title: channel.title,
+              thumbnailUrl: channel.thumbnail_url,
+              gameName: channel.game_name,
+              viewerCount: channel.viewer_count,
+              startedAt: channel.started_at,
+              tags: channel.tags,
+              avatarUrl: userInfo ? userInfo.profile_image_url : ""
+            });
+          }
+        );
+
+        cursorFollowedChannels = responseFollowedChannels.pagination.cursor;
       } catch (error) {
         console.error("Error fetching followed channels:", error);
         fetchFollowedChannelsStatus.value = "error";
         return;
       }
-    } while (cursor);
+    } while (cursorFollowedChannels);
 
     fetchFollowedChannelsStatus.value = "success";
 
@@ -254,7 +299,6 @@ export const useTwitchStore = defineStore("twitch", () => {
       return;
     }
 
-    const allChannels: FollowedChannel[] = [];
     let cursorFollowedChannels: string | undefined = undefined;
 
     do {
@@ -350,11 +394,48 @@ export const useTwitchStore = defineStore("twitch", () => {
           language: language === "all" ? undefined : language
         }
       });
+
+      // Get profile pictures for each channel
+      const channelIds = (response.data as TwitchApiStream[]).map(
+        (channel) => channel.user_id
+      );
+
+      const userResponse = await callApi<{ data: TwitchUserApiResponse[] }>(
+        "/users",
+        "GET",
+        {
+          params: {
+            id: channelIds
+          }
+        }
+      );
+
+      const userMap: Record<string, TwitchUserApiResponse> = {};
+      userResponse.data.forEach((user) => {
+        userMap[user.id] = user;
+      });
+
+      const liveChannels: LiveChannel[] = (
+        response.data as TwitchApiStream[]
+      ).map((channel) => ({
+        userId: channel.user_id,
+        login: channel.user_login,
+        displayName: channel.user_name,
+        title: channel.title,
+        thumbnailUrl: channel.thumbnail_url,
+        gameName: channel.game_name,
+        viewerCount: channel.viewer_count,
+        startedAt: channel.started_at,
+        avatarUrl: userMap[channel.user_id]?.profile_image_url || "",
+        tags: channel.tags
+      }));
+
       if (reset) {
-        topChannels.value = response.data as TwitchApiStream[];
+        topChannels.value = liveChannels;
       } else {
-        topChannels.value.push(...(response.data as TwitchApiStream[]));
+        topChannels.value.push(...liveChannels);
       }
+
       topChannelsCursor.value = response.pagination.cursor;
       fetchTopChannelsStatus.value = "success";
       fetchTopChannelsLoadMoreStatus.value = "success";
@@ -422,13 +503,13 @@ export const useTwitchStore = defineStore("twitch", () => {
     favoriteChannelIds.value.delete(channelId);
 
     const isChannelCurrentlyLive = favoriteLiveChannels.value.some(
-      (channel) => channel.user_id === channelId
+      (channel) => channel.userId === channelId
     );
 
     if (isChannelCurrentlyLive) {
       // Remove the channel from the favoriteLiveChannels list if it's there
       favoriteLiveChannels.value = favoriteLiveChannels.value.filter(
-        (channel) => channel.user_id !== channelId
+        (channel) => channel.userId !== channelId
       );
       favoritedLiveChannelsCountForNavBadge.value--;
     }
@@ -463,9 +544,37 @@ export const useTwitchStore = defineStore("twitch", () => {
         }
       );
 
+      const userResponse = await callApi<{ data: TwitchUserApiResponse[] }>(
+        "/users",
+        "GET",
+        {
+          params: {
+            id: channelIds
+          }
+        }
+      );
+
+      const userMap: Record<string, TwitchUserApiResponse> = {};
+      userResponse.data.forEach((user) => {
+        userMap[user.id] = user;
+      });
+
+      const liveChannels: LiveChannel[] = response.data.map((channel) => ({
+        userId: channel.user_id,
+        login: channel.user_login,
+        displayName: channel.user_name,
+        title: channel.title,
+        thumbnailUrl: channel.thumbnail_url,
+        gameName: channel.game_name,
+        viewerCount: channel.viewer_count,
+        startedAt: channel.started_at,
+        tags: channel.tags,
+        avatarUrl: userMap[channel.user_id]?.profile_image_url || ""
+      }));
+
       favoriteLiveChannels.value = isFavoriteChannelsReverseOrder.value
-        ? response.data.reverse()
-        : response.data;
+        ? liveChannels.reverse()
+        : liveChannels;
 
       fetchFavoriteChannelsStatus.value = "success";
 
