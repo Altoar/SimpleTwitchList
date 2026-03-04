@@ -44,6 +44,10 @@ const props = defineProps<{
       color: var(--text-primary);
       border-color: var(--accent-color);
     }
+
+    &:hover {
+      color: var(--text-primary);
+    }
   }
 }
 </style>

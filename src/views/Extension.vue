@@ -1,17 +1,21 @@
 <template>
-  <TopBar />
-  <div class="main-content">
-    <SideNav :current-path="currentPath" />
-    <div class="content-area" v-if="twitchStore.twitchAuthStatus === 'loading'">
-      <ContentLoading />
-    </div>
-    <div class="content-area" v-else-if="mainStore.isLoggedIn">
-      <KeepAlive include="ContentChannelsManagement">
-        <component :is="currentView" />
-      </KeepAlive>
-    </div>
-    <div class="content-area" v-else>
-      <ContentNotLoggedIn />
+  <div class="extension-frame">
+    <TopBar />
+    <div class="main-content">
+      <SideNav :current-path="currentPath" />
+      <div
+        class="content-area"
+        v-if="twitchStore.twitchAuthStatus === 'loading'">
+        <ContentLoading />
+      </div>
+      <div class="content-area" v-else-if="mainStore.isLoggedIn">
+        <KeepAlive include="ContentChannelsManagement">
+          <component :is="currentView" />
+        </KeepAlive>
+      </div>
+      <div class="content-area" v-else>
+        <ContentNotLoggedIn />
+      </div>
     </div>
   </div>
 </template>
@@ -80,11 +84,13 @@ const currentView = computed(() => {
 </script>
 
 <style scoped lang="scss">
+.extension-frame {
+  width: 450px;
+}
 .main-content {
   display: flex;
   height: 100%;
   min-height: 200px;
-  width: 450px;
   max-height: 550px;
 }
 .content-area {
